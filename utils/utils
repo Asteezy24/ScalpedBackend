@@ -1,0 +1,18 @@
+let moment = require('moment-timezone')
+
+const formatDate = (epoch) => {
+  let dateObj = new Date(Number(epoch))
+  return (dateObj.getMonth() + 1) + '/' + dateObj.getDate() + '/' + dateObj.getFullYear()
+}
+
+function dateTimeString () {
+  let d = new Date()
+  let myTimezone = 'America/Toronto'
+  let myDatetimeFormat = 'YYYY-MM-DD hh:mm:ss a z'
+  return '[' + moment(d).tz(myTimezone).format(myDatetimeFormat) + ']'
+}
+
+module.exports = {
+  dateTimeString: dateTimeString,
+  formatDate: formatDate
+}

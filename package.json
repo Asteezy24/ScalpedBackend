@@ -1,0 +1,69 @@
+{
+  "name": "Socky",
+  "version": "1.0.0",
+  "description": "I love sockets",
+  "scripts": {
+    "clean": "rm -rf build && mkdir build",
+    "build-server": "babel -d ./build ./server -s",
+    "build": "npm run clean && npm run build-server",
+    "dev": "nodemon start --exec babel-node",
+    "start": "node ./build/start.js"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "author": "Alex Stevens <http://www.github.com/asteezy24>",
+  "dependencies": {
+    "Router": "^2.1.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.3",
+    "config": "^3.0.0",
+    "deo": "0.0.2",
+    "dotenv": "^8.2.0",
+    "express": "^4.16.4",
+    "graphql": "^14.0.2",
+    "jwt-simple": "^0.5.5",
+    "moment": "^2.22.2",
+    "moment-timezone": "^0.5.32",
+    "mongoose": "^5.3.12",
+    "morgan": "^1.9.1",
+    "ololog": "^1.1.113",
+    "socket.io": "^3.0.3",
+    "websocket": "^1.0.32"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.2.0",
+    "babel-preset-node8": "^1.1.2",
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-google": "^0.11.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "husky": "^0.14.3",
+    "jest": "^23.2.0",
+    "lint-staged": "^4.0.0",
+    "nodemon": "^1.18.7",
+    "prettier": "^1.13.6",
+    "regenerator-runtime": "^0.12.0"
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --single-quote --trailing-comma --no-semi es5 --write",
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm test",
+      "pre-push": "npm test"
+    }
+  }
+}
