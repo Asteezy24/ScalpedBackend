@@ -3,7 +3,7 @@ const log = require('ololog').configure({ locate: false })
 const utils = require('./utils/utils')
 const bodyParser = require('body-parser')
 const express = require('express')
-const initialTickerController = require('./data collection/initialTickers')
+const TickerController = require('./data collection/TickerCollection')
 const app = express()
 const router = require('./routes/route')
 const WebSocketServer = require('websocket').server
@@ -86,7 +86,7 @@ const wsServer = new WebSocketServer({
 app.listen(process.env.PORT, () => {
   const dt = utils.dateTimeString()
   log(dt.blue, 'Server is live on port 3000'.green)
-  initialTickerController.getAllTickers()
+  TickerController.collectData()
 })
 
 // function blastMessage () {

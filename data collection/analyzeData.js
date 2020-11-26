@@ -2,14 +2,16 @@ const log = require('ololog').configure({ locate: false })
 const ccxt = require('ccxt')
 const Candlesticks = require('../indicators/candlestickPatterns')
 const Indicators = require('../indicators/indicators')
+const notify = require('../utils/notify')
 
 function analyzeDataFromCCXT (APIendpoints) {
   console.log('Setting up Database.\n')
+  notify.sendSlackMessageMain('foo', 'Bugha', 'three', 'four')
 
   for (let i = 0; i < APIendpoints.length; i++) {
     setTimeout(function (exchangeData, tickerData) {
       collectData(exchangeData, tickerData)
-    }, i * 2500, APIendpoints[i].exchange, APIendpoints[i].ticker)
+    }, i * 2000, APIendpoints[i].exchange, APIendpoints[i].ticker)
   }
   // establishEndpointsFromDatabase(APIendpoints)
 }
@@ -41,31 +43,18 @@ function collectData (exchange, ticker) {
     arrayOfClosePrices.splice(-1, 1)
     arrayOfOpenPrices.splice(-1, 1)
 
+    const twentySma = Indicators.simpleMovingAverage(20, arrayOfClosePrices)
+    const fiftySma = Indicators.simpleMovingAverage(50, arrayOfClosePrices)
+    const hundredSma = Indicators.simpleMovingAverage(100, arrayOfClosePrices)
+    const hundredFiftySma = Indicators.simpleMovingAverage(150, arrayOfClosePrices)
+
     const cryptoModel = {
       exchange: exchange,
       ticker: ticker,
-      isAbandonedBaby: Candlesticks.abandonedBaby(arrayOfOpenPrices.slice(-3), arrayOfHighPrices.slice(-3), arrayOfClosePrices.slice(-3), arrayOfLowPrices.slice(-3)),
-      isDownsideTasukiGap: Candlesticks.downsideTasukiGap(arrayOfOpenPrices.slice(-3), arrayOfHighPrices.slice(-3), arrayOfClosePrices.slice(-3), arrayOfLowPrices.slice(-3)),
-      isEveningDojiStar: Candlesticks.eveningDojiStar(arrayOfOpenPrices.slice(-3), arrayOfHighPrices.slice(-3), arrayOfClosePrices.slice(-3), arrayOfLowPrices.slice(-3)),
-      isEveningStar: Candlesticks.eveningStar(arrayOfOpenPrices.slice(-3), arrayOfHighPrices.slice(-3), arrayOfClosePrices.slice(-3), arrayOfLowPrices.slice(-3)),
-      isMorningDojiStar: Candlesticks.morningDojiStar(arrayOfOpenPrices.slice(-3), arrayOfHighPrices.slice(-3), arrayOfClosePrices.slice(-3), arrayOfLowPrices.slice(-3)),
-      isMorningStar: Candlesticks.morningStar(arrayOfOpenPrices.slice(-3), arrayOfHighPrices.slice(-3), arrayOfClosePrices.slice(-3), arrayOfLowPrices.slice(-3)),
-      isThreeBlackCrows: Candlesticks.threeBlackCrows(arrayOfOpenPrices.slice(-3), arrayOfHighPrices.slice(-3), arrayOfClosePrices.slice(-3), arrayOfLowPrices.slice(-3)),
-      isThreeWhiteSoldiers: Candlesticks.threeWhiteSoldiers(arrayOfOpenPrices.slice(-3), arrayOfHighPrices.slice(-3), arrayOfClosePrices.slice(-3), arrayOfLowPrices.slice(-3)),
-      isBullishEngulfingPattern: Candlesticks.bullishEngulfingPattern(arrayOfOpenPrices.slice(-2), arrayOfHighPrices.slice(-2), arrayOfClosePrices.slice(-2), arrayOfLowPrices.slice(-2)),
-      isBearishEngulfingPattern: Candlesticks.bearishEngulfingPattern(arrayOfOpenPrices.slice(-2), arrayOfHighPrices.slice(-2), arrayOfClosePrices.slice(-2), arrayOfLowPrices.slice(-2)),
-      isDarkCloudCover: Candlesticks.darkCloudCover(arrayOfOpenPrices.slice(-2), arrayOfHighPrices.slice(-2), arrayOfClosePrices.slice(-2), arrayOfLowPrices.slice(-2)),
-      isBullishHarami: Candlesticks.bullishHarami(arrayOfOpenPrices.slice(-2), arrayOfHighPrices.slice(-2), arrayOfClosePrices.slice(-2), arrayOfLowPrices.slice(-2)),
-      isBearishHarami: Candlesticks.bearishHarami(arrayOfOpenPrices.slice(-2), arrayOfHighPrices.slice(-2), arrayOfClosePrices.slice(-2), arrayOfLowPrices.slice(-2)),
-      isBullishHaramiCross: Candlesticks.bullishHaramiCross(arrayOfOpenPrices.slice(-2), arrayOfHighPrices.slice(-2), arrayOfClosePrices.slice(-2), arrayOfLowPrices.slice(-2)),
-      isBearishHaramiCross: Candlesticks.bearishHaramiCross(arrayOfOpenPrices.slice(-2), arrayOfHighPrices.slice(-2), arrayOfClosePrices.slice(-2), arrayOfLowPrices.slice(-2)),
-      isPiercingLine: Candlesticks.piercingLine(arrayOfOpenPrices.slice(-2), arrayOfHighPrices.slice(-2), arrayOfClosePrices.slice(-2), arrayOfLowPrices.slice(-2)),
-      isDoji: Candlesticks.doji(arrayOfOpenPrices.slice(-1), arrayOfHighPrices.slice(-1), arrayOfClosePrices.slice(-1), arrayOfLowPrices.slice(-1)),
-      isDragonflyDoji: Candlesticks.dragonflyDoji(arrayOfOpenPrices.slice(-1), arrayOfHighPrices.slice(-1), arrayOfClosePrices.slice(-1), arrayOfLowPrices.slice(-1)),
-      isGravestoneDoji: Candlesticks.gravestoneDoji(arrayOfOpenPrices.slice(-1), arrayOfHighPrices.slice(-1), arrayOfClosePrices.slice(-1), arrayOfLowPrices.slice(-1)),
-      isBullishMarubozu: Candlesticks.bullishMarubozu(arrayOfOpenPrices.slice(-1), arrayOfHighPrices.slice(-1), arrayOfClosePrices.slice(-1), arrayOfLowPrices.slice(-1)),
-      isBearishMarubozu: Candlesticks.bearishMarubozu(arrayOfOpenPrices.slice(-1), arrayOfHighPrices.slice(-1), arrayOfClosePrices.slice(-1), arrayOfLowPrices.slice(-1)),
-      twentySma: Indicators.simpleMovingAverage(20, arrayOfClosePrices).slice(-1)[0]
+      twentySma: twentySma[twentySma.length - 1],
+      fiftySma: fiftySma[fiftySma.length - 1],
+      hundredSma: hundredSma[hundredSma.length - 1],
+      hundredFiftySma: hundredFiftySma[hundredFiftySma.length - 1]
     }
     console.log(cryptoModel)
   }
@@ -73,7 +62,7 @@ function collectData (exchange, ticker) {
 
   Promise.all(concurrent)
     .then(function () {
-      console.log('Finished Analysis of ' + ticker);
+      log.bright.green('Finished Analysis of ' + ticker)
     })
     .catch((error) => {
       console.log('Error on ticker: ' + ticker + '. Retrying...')
@@ -81,6 +70,25 @@ function collectData (exchange, ticker) {
         olhcvCollection(tickerPromise)
       }, 11200, ticker)
     })
+}
+
+/*
+20 < 50
+20 < 100
+20 < 150
+
+50 < 100
+50 < 150
+
+100 < 150
+ */
+
+function checkForChange (oldVariable, newVariable) {
+  if (oldVariable == newVariable) {
+    return oldVariable
+  } else {
+    return newVariable
+  }
 }
 
 module.exports = {

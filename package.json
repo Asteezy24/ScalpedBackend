@@ -30,6 +30,7 @@
     "mongoose": "^5.3.12",
     "morgan": "^1.9.1",
     "ololog": "^1.1.113",
+    "slack-webhook": "^1.0.0",
     "socket.io": "^3.0.3",
     "technicalindicators": "^3.1.0",
     "websocket": "^1.0.32"

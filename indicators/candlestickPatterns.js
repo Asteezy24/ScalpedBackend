@@ -1,463 +1,365 @@
-const technicalindicators = require('technicalindicators');
+const technicalindicators = require('technicalindicators')
 
-////////////////////////////////////////////////////////////
-//3 Candle Patterns
-////////////////////////////////////////////////////////////
-function abandonedBaby(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var AbandonedBaby = technicalindicators.abandonedbaby;
-  var threeDayInput = {
-  	open: arrayOfOpenPrices,
-  	high: arrayOfHighPrices,
-  	close: arrayOfClosePrices,
-  	low: arrayOfLowPrices
-  }
-  var result = AbandonedBaby(threeDayInput);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function downsideTasukiGap(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var downsidetasukigap = technicalindicators.downsidetasukigap;
-
-  var threeDayInput = {
-    open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-    }
-
-  var result = downsidetasukigap(threeDayInput);
-
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function eveningDojiStar(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var eveningdojistar = technicalindicators.eveningdojistar;
-
-  var Input = {
+/// /////////////////////////////////////////////////////////
+// 3 Candle Patterns
+/// /////////////////////////////////////////////////////////
+function abandonedBaby (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const AbandonedBaby = technicalindicators.abandonedbaby
+  const threeDayInput = {
     open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
     close: arrayOfClosePrices,
     low: arrayOfLowPrices
   }
-
-
-  var result = eveningdojistar(Input);
-
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  const result = AbandonedBaby(threeDayInput)
+  return result === true
 }
 
-function eveningStar(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-
-  var eveningstar = technicalindicators.eveningstar;
-
-  var input = {
+function downsideTasukiGap (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const downsidetasukigap = technicalindicators.downsidetasukigap
+  const threeDayInput = {
     open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
     close: arrayOfClosePrices,
     low: arrayOfLowPrices
   }
+  const result = downsidetasukigap(threeDayInput)
 
-  var result = eveningstar(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  return result === true
 }
 
-function morningDojiStar(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var morningdojistar = technicalindicators.morningdojistar;
-
-  var input = {
+function eveningDojiStar (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const eveningdojistar = technicalindicators.eveningdojistar
+  const Input = {
     open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
     close: arrayOfClosePrices,
     low: arrayOfLowPrices
   }
+  const result = eveningdojistar(Input)
 
-  var result = morningdojistar(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  return result === true
 }
 
-function morningStar(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var morningstar = technicalindicators.morningstar;
-
-
-  var input = {
+function eveningStar (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const eveningstar = technicalindicators.eveningstar
+  const input = {
     open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
     close: arrayOfClosePrices,
     low: arrayOfLowPrices
   }
-
-  var result = morningstar(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  const result = eveningstar(input)
+  return result === true
 }
 
-function threeBlackCrows(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var threeblackcrows = technicalindicators.threeblackcrows;
-
-  var input = {
+function morningDojiStar (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const morningdojistar = technicalindicators.morningdojistar
+  const input = {
     open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
     close: arrayOfClosePrices,
     low: arrayOfLowPrices
   }
-
-  var result = threeblackcrows(input);
-
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  const result = morningdojistar(input)
+  return result === true
 }
 
-function threeWhiteSoldiers(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var threewhitesoldiers = technicalindicators.threewhitesoldiers;
-
-  var input = {
-    open: arrayOfOpenPrices,
-    close: arrayOfClosePrices,
-    high: arrayOfHighPrices,
-    low: arrayOfLowPrices
-  }
-
-  var result = threewhitesoldiers(input);
-
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-////////////////////////////////////////////////////////////
-//2 Candle Patterns
-////////////////////////////////////////////////////////////
-
-function bearishEngulfingPattern(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bearishengulfingpattern = technicalindicators.bearishengulfingpattern;
-
-  var twoDayBearishInput = {
-    open: arrayOfOpenPrices,
-  	high: arrayOfHighPrices,
-  	close: arrayOfClosePrices,
-  	low: arrayOfLowPrices
-  }
-  var result = bearishengulfingpattern(twoDayBearishInput);
-
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function bullishEngulfingPattern(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bullishengulfingpattern = technicalindicators.bullishengulfingpattern;
-
-  var twoDayBullishInput = {
-    open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-  }
-
-  var result  = bullishengulfingpattern(twoDayBullishInput);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function darkCloudCover(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var darkcloudcover = technicalindicators.darkcloudcover;
-
-  var twoDayInput = {
-    open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-  }
-
-  var result  = darkcloudcover(twoDayInput);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function bullishHarami(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bullishharami = technicalindicators.bullishharami;
-
-  var input = {
-    open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-  }
-
-  var result = bullishharami(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function bearishHarami(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bearishharami = technicalindicators.bearishharami;
-
-  var input = {
-    open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-  }
-
-  var result = bearishharami(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function bearishHaramiCross(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bearishharamicross = technicalindicators.bearishharamicross;
-
-  var input = {
-    open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-
-  }
-
-  var result = bearishharamicross(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function bullishHaramiCross(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bullishharamicross = technicalindicators.bullishharamicross;
-
-  var input = {
-    open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-  }
-
-  var result = bullishharamicross(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function piercingLine(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var piercingline = technicalindicators.piercingline;
-
-  var input = {
-    open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-  }
-
-  var result = piercingline(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-////////////////////////////////////////////////////////////
-//1 Candle Patterns
-////////////////////////////////////////////////////////////
-
-function doji(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var doji = technicalindicators.doji;
-
-  var singleInput = {
-    open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-  }
-
-
-  var result = doji(singleInput);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function dragonflyDoji(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var dragonflydoji = technicalindicators.dragonflydoji;
-
-  var singleInput = {
+function morningStar (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const morningstar = technicalindicators.morningstar
+  const input = {
     open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
     close: arrayOfClosePrices,
     low: arrayOfLowPrices
   }
-
-  var result = dragonflydoji(singleInput);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  const result = morningstar(input)
+  return result === true
 }
 
-function gravestoneDoji(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var gravestonedoji = technicalindicators.gravestonedoji;
-
-  var singleInput = {
+function threeBlackCrows (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const threeblackcrows = technicalindicators.threeblackcrows
+  const input = {
     open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
     close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
-
+    low: arrayOfLowPrices
   }
+  const result = threeblackcrows(input)
 
-  var result  = gravestonedoji(singleInput);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  return result === true
 }
 
-function bullishMarubozu(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bullishmarubozu = technicalindicators.bullishmarubozu;
-
-  var input = {
-    close: arrayOfClosePrices,
+function threeWhiteSoldiers (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const threewhitesoldiers = technicalindicators.threewhitesoldiers
+  const input = {
     open: arrayOfOpenPrices,
-    high: arrayOfHighPrices,
-    low: arrayOfLowPrices,
-  }
-
-  var result = bullishmarubozu(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function bearishMarubozu(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bearishmarubozu = technicalindicators.bearishmarubozu;
-
-  var input = {
     close: arrayOfClosePrices,
-    open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
-    low: arrayOfLowPrices,
+    low: arrayOfLowPrices
   }
+  const result = threewhitesoldiers(input)
 
-  var result = bearishmarubozu(input);
-
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  return result === true
 }
 
-function bullishSpinningTop(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bullishspinningtop = technicalindicators.bullishspinningtop;
+/// /////////////////////////////////////////////////////////
+// 2 Candle Patterns
+/// /////////////////////////////////////////////////////////
 
-  var input = {
+function bearishEngulfingPattern (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const bearishengulfingpattern = technicalindicators.bearishengulfingpattern
+  const twoDayBearishInput = {
     open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
     close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
+    low: arrayOfLowPrices
   }
+  const result = bearishengulfingpattern(twoDayBearishInput)
 
-  var result = bullishspinningtop(input);
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  return result === true
 }
 
-function bearishSpinningTop(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
-  var bearishspinningtop = technicalindicators.bearishspinningtop;
-
-  var input = {
+function bullishEngulfingPattern (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const bullishengulfingpattern = technicalindicators.bullishengulfingpattern
+  const twoDayBullishInput = {
     open: arrayOfOpenPrices,
     high: arrayOfHighPrices,
     close: arrayOfClosePrices,
-    low: arrayOfLowPrices,
+    low: arrayOfLowPrices
   }
-
-  var result = bearishspinningtop(input);
-
-  if(result==true){
-    return true;
-  } else {
-    return false;
-  }
+  const result = bullishengulfingpattern(twoDayBullishInput)
+  return result === true
 }
+
+function darkCloudCover (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const darkcloudcover = technicalindicators.darkcloudcover
+  const twoDayInput = {
+    open: arrayOfOpenPrices,
+    high: arrayOfHighPrices,
+    close: arrayOfClosePrices,
+    low: arrayOfLowPrices
+  }
+  const result = darkcloudcover(twoDayInput)
+  return result === true
+}
+
+function bullishHarami (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const bullishharami = technicalindicators.bullishharami
+  const input = {
+    open: arrayOfOpenPrices,
+    high: arrayOfHighPrices,
+    close: arrayOfClosePrices,
+    low: arrayOfLowPrices
+  }
+  const result = bullishharami(input)
+  return result === true
+}
+
+function bearishHarami (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const bearishharami = technicalindicators.bearishharami
+  const input = {
+    open: arrayOfOpenPrices,
+    high: arrayOfHighPrices,
+    close: arrayOfClosePrices,
+    low: arrayOfLowPrices
+  }
+  const result = bearishharami(input)
+  return result === true
+}
+
+function bearishHaramiCross (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const bearishharamicross = technicalindicators.bearishharamicross
+  const input = {
+    open: arrayOfOpenPrices,
+    high: arrayOfHighPrices,
+    close: arrayOfClosePrices,
+    low: arrayOfLowPrices
+  }
+  const result = bearishharamicross(input)
+  return result === true
+}
+
+function bullishHaramiCross (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const bullishharamicross = technicalindicators.bullishharamicross
+  const input = {
+    open: arrayOfOpenPrices,
+    high: arrayOfHighPrices,
+    close: arrayOfClosePrices,
+    low: arrayOfLowPrices
+  }
+  const result = bullishharamicross(input)
+  return result === true
+}
+
+function piercingLine (arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices) {
+  const piercingline = technicalindicators.piercingline
+  const input = {
+    open: arrayOfOpenPrices,
+    high: arrayOfHighPrices,
+    close: arrayOfClosePrices,
+    low: arrayOfLowPrices
+  }
+  const result = piercingline(input)
+  return result === true
+}
+
+/// /////////////////////////////////////////////////////////
+// 1 Candle Patterns
+/// /////////////////////////////////////////////////////////
+//
+// function doji(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
+// const  doji = technicalindicators.doji;
+//
+// const  singleInput = {
+//     open: arrayOfOpenPrices,
+//     high: arrayOfHighPrices,
+//     close: arrayOfClosePrices,
+//     low: arrayOfLowPrices,
+//   }
+//
+//
+// const  result = doji(singleInput);
+//   if(result==true){
+//     return true;
+//   } else {
+//     return false;
+//   }
+// }
+//
+// function dragonflyDoji(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
+// const  dragonflydoji = technicalindicators.dragonflydoji;
+//
+// const  singleInput = {
+//     open: arrayOfOpenPrices,
+//     high: arrayOfHighPrices,
+//     close: arrayOfClosePrices,
+//     low: arrayOfLowPrices
+//   }
+//
+// const  result = dragonflydoji(singleInput);
+//   if(result==true){
+//     return true;
+//   } else {
+//     return false;
+//   }
+// }
+//
+// function gravestoneDoji(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
+// const  gravestonedoji = technicalindicators.gravestonedoji;
+//
+// const  singleInput = {
+//     open: arrayOfOpenPrices,
+//     high: arrayOfHighPrices,
+//     close: arrayOfClosePrices,
+//     low: arrayOfLowPrices,
+//
+//   }
+//
+// const  result  = gravestonedoji(singleInput);
+//   if(result==true){
+//     return true;
+//   } else {
+//     return false;
+//   }
+// }
+//
+// function bullishMarubozu(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
+// const  bullishmarubozu = technicalindicators.bullishmarubozu;
+//
+// const  input = {
+//     close: arrayOfClosePrices,
+//     open: arrayOfOpenPrices,
+//     high: arrayOfHighPrices,
+//     low: arrayOfLowPrices,
+//   }
+//
+// const  result = bullishmarubozu(input);
+//   if(result==true){
+//     return true;
+//   } else {
+//     return false;
+//   }
+// }
+//
+// function bearishMarubozu(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
+// const  bearishmarubozu = technicalindicators.bearishmarubozu;
+//
+// const  input = {
+//     close: arrayOfClosePrices,
+//     open: arrayOfOpenPrices,
+//     high: arrayOfHighPrices,
+//     low: arrayOfLowPrices,
+//   }
+//
+// const  result = bearishmarubozu(input);
+//
+//   if(result==true){
+//     return true;
+//   } else {
+//     return false;
+//   }
+// }
+//
+// function bullishSpinningTop(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
+// const  bullishspinningtop = technicalindicators.bullishspinningtop;
+//
+// const  input = {
+//     open: arrayOfOpenPrices,
+//     high: arrayOfHighPrices,
+//     close: arrayOfClosePrices,
+//     low: arrayOfLowPrices,
+//   }
+//
+// const  result = bullishspinningtop(input);
+//   if(result==true){
+//     return true;
+//   } else {
+//     return false;
+//   }
+// }
+//
+// function bearishSpinningTop(arrayOfOpenPrices, arrayOfHighPrices, arrayOfClosePrices, arrayOfLowPrices){
+// const  bearishspinningtop = technicalindicators.bearishspinningtop;
+//
+// const  input = {
+//     open: arrayOfOpenPrices,
+//     high: arrayOfHighPrices,
+//     close: arrayOfClosePrices,
+//     low: arrayOfLowPrices,
+//   }
+//
+// const  result = bearishspinningtop(input);
+//
+//   if(result==true){
+//     return true;
+//   } else {
+//     return false;
+//   }
+// }
 
 module.exports = {
-  abandonedBaby:abandonedBaby,
-  bearishEngulfingPattern:bearishEngulfingPattern,
-  bullishEngulfingPattern:bullishEngulfingPattern,
-  darkCloudCover:darkCloudCover,
-  downsideTasukiGap:downsideTasukiGap,
-  doji:doji,
-  dragonflyDoji:dragonflyDoji,
-  gravestoneDoji:gravestoneDoji,
-  bullishHarami:bullishHarami,
-  bearishHaramiCross:bearishHaramiCross,
-  bullishHaramiCross:bullishHaramiCross,
-  bullishMarubozu:bullishMarubozu,
-  bearishMarubozu:bearishMarubozu,
-  eveningDojiStar:eveningDojiStar,
-  eveningStar:eveningStar,
-  bearishHarami:bearishHarami,
-  piercingLine:piercingLine,
-  bullishSpinningTop:bullishSpinningTop,
-  bearishSpinningTop:bearishSpinningTop,
-  morningDojiStar:morningDojiStar,
-  morningStar:morningStar,
-  threeBlackCrows:threeBlackCrows,
-  threeWhiteSoldiers:threeWhiteSoldiers
-
+  abandonedBaby: abandonedBaby,
+  bearishEngulfingPattern: bearishEngulfingPattern,
+  bullishEngulfingPattern: bullishEngulfingPattern,
+  darkCloudCover: darkCloudCover,
+  downsideTasukiGap: downsideTasukiGap,
+  // doji:doji,
+  // dragonflyDoji:dragonflyDoji,
+  // gravestoneDoji:gravestoneDoji,
+  bullishHarami: bullishHarami,
+  bearishHaramiCross: bearishHaramiCross,
+  bullishHaramiCross: bullishHaramiCross,
+  // bullishMarubozu:bullishMarubozu,
+  // bearishMarubozu:bearishMarubozu,
+  eveningDojiStar: eveningDojiStar,
+  eveningStar: eveningStar,
+  bearishHarami: bearishHarami,
+  piercingLine: piercingLine,
+  // bullishSpinningTop:bullishSpinningTop,
+  // bearishSpinningTop:bearishSpinningTop,
+  morningDojiStar: morningDojiStar,
+  morningStar: morningStar,
+  threeBlackCrows: threeBlackCrows,
+  threeWhiteSoldiers: threeWhiteSoldiers
 }

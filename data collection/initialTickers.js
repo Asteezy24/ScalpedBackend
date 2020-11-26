@@ -5,7 +5,7 @@ const analyzeController = require('./analyzeData')
 // User Preferences
 let exchanges = ['bittrex']
 var finalMarketTickersAndSymbols = []
-// var exchangePairs = ['BTC']
+var exchangePairs = ['BTC']
 var APIendpoints = []
 
 let loadExchange = async function (exchange) {
@@ -45,17 +45,17 @@ async function getAllTickers () {
 
   log.bright.red('\nGathering all trading pairs to be used.')
 
-  for (var i = 0; i < finalMarketTickersAndSymbols.length; i++) { // exchanges
-    for (var j = 0; j < 1; j++) { // ticker symbols finalMarketTickersAndSymbols[i].value.length
-      // for (pair in exchangePairs) {
-      // if (finalMarketTickersAndSymbols[i].value[j].slice(-3) == exchangePairs[pair]) { // check if ticker contains the specified trading pairs
-      var item = {
-        exchange: finalMarketTickersAndSymbols[i].key,
-        ticker: finalMarketTickersAndSymbols[i].value[j]
-      } // for later reference
-      APIendpoints.push(item)
-      // }
-      // }
+  for (let i = 0; i < finalMarketTickersAndSymbols.length; i++) { // exchanges
+    for (var j = 0; j < 5; j++) { // ticker symbols finalMarketTickersAndSymbols[i].value.length
+      for (pair in exchangePairs) {
+        if (finalMarketTickersAndSymbols[i].value[j].includes(exchangePairs[pair])) { // check if ticker contains the specified trading pairs
+          var item = {
+            exchange: finalMarketTickersAndSymbols[i].key,
+            ticker: finalMarketTickersAndSymbols[i].value[j]
+          } // for later reference
+          APIendpoints.push(item)
+        }
+      }
     }
   }
   analyzeController.analyzeDataFromCCXT(APIendpoints)
