@@ -3,24 +3,21 @@ const log = require('ololog').configure({ locate: false })
 const utils = require('./utils/utils')
 const bodyParser = require('body-parser')
 const express = require('express')
+const initialTickerController = require('./data collection/initialTickers')
+const app = express()
+const router = require('./routes/route')
+const WebSocketServer = require('websocket').server
+const http = require('http')
+const socketHandler = require('./utils/socketHandler')
+const strategies = require('./routes/route').strategies
 const mongoose = require('mongoose')
 const morgan = require('morgan')
-const router = require('./routes/route')
-var WebSocketServer = require('websocket').server
-var http = require('http')
-var socketHandler = require('./utils/socketHandler')
-
-var strategies = require('./routes/route').strategies
-
-require('ansicolor').nice
-const app = express()
+const ansi = require('ansicolor').nice
 
 dotenv.config()
-
 app.use(bodyParser.json())
 app.use(router.router)
 app.use(log)
-
 app.use((req, res, next) => {
   const err = new Error('Not Found')
   err.status = 404
@@ -89,22 +86,23 @@ const wsServer = new WebSocketServer({
 app.listen(process.env.PORT, () => {
   const dt = utils.dateTimeString()
   log(dt.blue, 'Server is live on port 3000'.green)
+  initialTickerController.getAllTickers()
 })
 
-function blastMessage () {
-  wsServer.connections.forEach(function each (client) {
-    console.log(client.remoteAddress)
-    const random = strategies[Math.floor(Math.random() * strategies.length)]
-    client.send(JSON.stringify(random))
-  })
-}
+// function blastMessage () {
+//   wsServer.connections.forEach(function each (client) {
+//     console.log(client.remoteAddress)
+//     const random = strategies[Math.floor(Math.random() * strategies.length)]
+//     client.send(JSON.stringify(random))
+//   })
+// }
 
-setInterval(function () {
-  /// call your function here
-  if (strategies[0] != undefined) {
-    blastMessage()
-  }
-}, 10000)
+// setInterval(function () {
+//   /// call your function here
+//   if (strategies[0] != undefined) {
+//     blastMessage()
+//   }
+// }, 12000)
 
 wsServer.on('request', function (request) {
   socketHandler.handleConnection(request)

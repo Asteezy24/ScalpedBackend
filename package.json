@@ -18,6 +18,7 @@
     "Router": "^2.1.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
+    "ccxt": "^1.38.20",
     "config": "^3.0.0",
     "deo": "0.0.2",
     "dotenv": "^8.2.0",
@@ -30,6 +31,7 @@
     "morgan": "^1.9.1",
     "ololog": "^1.1.113",
     "socket.io": "^3.0.3",
+    "technicalindicators": "^3.1.0",
     "websocket": "^1.0.32"
   },
   "devDependencies": {
