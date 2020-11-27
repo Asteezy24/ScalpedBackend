@@ -136,15 +136,15 @@ async function scheduledCollection (symbol, instance, timeframe) {
 
     for (const key in newDataJsonHourly) {
       if (key === 'guppy') {
-        // if (newDataJsonHourly[key] !== oldDataJsonHourly[key]) {
-        try {
-          const update = {}
-          update[key] = newDataJsonHourly[key]
-          oldData['hourly'] = update
-        } catch (e) {
-          console.log('error updating the models')
+        if (newDataJsonHourly[key] !== oldDataJsonHourly[key]) {
+          try {
+            const update = {}
+            update[key] = newDataJsonHourly[key]
+            oldData['hourly'] = update
+          } catch (e) {
+            console.log('error updating the models')
+          }
         }
-        // }
       }
     }
 
@@ -202,7 +202,7 @@ async function collectData () {
 
 // -----------------------------------------------------------------------------
 
-schedule.scheduleJob('*/42 * * * *', async function () {
+schedule.scheduleJob('*/30 * * * *', async function () {
   for (const index in tickerEndpoints) {
     let symbol = tickerEndpoints[index].ticker
     await scheduledCollection(symbol, bittrexInstance, '1h')
