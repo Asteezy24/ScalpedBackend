@@ -218,6 +218,9 @@ schedule.scheduleJob('*/44 * * * *', async function () {
     let symbol = tickerEndpoints[index].ticker
     await hourlyOlhcvCollection(symbol, bittrexInstance)
   }
+  const dt = utils.dateTimeString()
+  const collectedString = 'Hourly Ticker Data Collected'
+  log(dt.blue, collectedString.green)
 })
 
 module.exports = {
