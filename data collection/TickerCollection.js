@@ -1,7 +1,9 @@
 const ccxt = require('ccxt')
 const utils = require('../utils/utils')
-const Candlesticks = require('../indicators/candlestickPatterns')
 const Indicators = require('../indicators/indicators')
+const schedule = require('node-schedule')
+const notify = require('../utils/notify')
+
 const log = require('ololog').configure({
   locate: false
 })
@@ -45,7 +47,7 @@ let loadExchange = async function (exchange) {
 
 // -----------------------------------------------------------------------------
 
-async function initialOlhcvCollection (symbol, instance) {
+async function getCandlesAndIndicators (symbol, instance) {
   let arrayOfClosePricesHourly = []
   let arrayOfOpenPricesHourly = []
   let arrayOfHighPricesHourly = []
@@ -83,29 +85,13 @@ async function initialOlhcvCollection (symbol, instance) {
 
 // -----------------------------------------------------------------------------
 
-async function collectData () {
-  await getAllTickers()
-    .then(async () => {
-      for (const index in tickerEndpoints) {
-        let symbol = tickerEndpoints[index].ticker
-        await initialOlhcvCollection(symbol, bittrexInstance)
-      }
-    })
-  const dt = utils.dateTimeString()
-  const collectedString = 'Initial Ticker Data Collected'
-  log(dt.blue, collectedString.green)
-}
-
-// -----------------------------------------------------------------------------
-
 async function getAllTickers () {
   // instantiate all exchanges
   await loadExchange(bittrexInstance)
-
-  log.bright.red('\nGathering all trading pairs to be used.')
-  //
+  const dt = utils.dateTimeString()
+  log.bright.red(dt, 'Gathering all trading pairs to be used.')
   for (const exchange in finalMarketTickersAndSymbols) {
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 4; i++) {
       const symbolForExchange = finalMarketTickersAndSymbols[exchange].symbolsArray[i]
       if (symbolForExchange.includes('BTC')) {
         let item = {
@@ -116,7 +102,6 @@ async function getAllTickers () {
       }
     }
   }
-  // analyzeController.analyzeDataFromCCXT(APIendpoints)
 }
 
 async function hourlyOlhcvCollection (symbol, instance) {
@@ -127,7 +112,13 @@ async function hourlyOlhcvCollection (symbol, instance) {
     let arrayOfLowPricesHourly = []
     let arrayOfVolumeHourly = []
 
-    let ohlcvHourly = await instance.fetchOHLCV(symbol, '4h')
+    let ohlcvHourly = await instance.fetchOHLCV(symbol, '1h')
+
+    // we want to remove the last item, it is the current forming candle
+    arrayOfHighPricesHourly.splice(-1, 1)
+    arrayOfLowPricesHourly.splice(-1, 1)
+    arrayOfClosePricesHourly.splice(-1, 1)
+    arrayOfOpenPricesHourly.splice(-1, 1)
 
     for (let i = 0; i < ohlcvHourly.length; i++) {
       arrayOfOpenPricesHourly.push(ohlcvHourly[i][1])
@@ -137,47 +128,47 @@ async function hourlyOlhcvCollection (symbol, instance) {
       arrayOfVolumeHourly.push(ohlcvHourly[i][5])
     }
 
-    var lastPrice = arrayOfClosePricesHourly[arrayOfClosePricesHourly.length - 1]
-
-    var analysisOfData = {
+    const analysisOfData = {
       exchange: instance,
       ticker: symbol,
       hourly: {
-        guppy: 'Bugha'
+        guppy: Indicators.GMMA(arrayOfClosePricesHourly)
       }
     }
 
-    // var parsedOldData = tableRow
-    // var oldDataJsonHourly = parsedOldData['hourly']
-    // var newDataJsonHourly = analysisOfData['hourly']
+    // const old
+    const oldData = technicalModels.find(element => element.ticker === symbol)
+    const oldDataJsonHourly = oldData['hourly']
+    const newDataJsonHourly = analysisOfData['hourly']
+    const lastPrice = arrayOfClosePricesHourly[arrayOfClosePricesHourly.length - 1]
 
-    // for (var key in newDataJsonHourly) {
-    //   if (key == 'guppy') {
-    //     if (newDataJsonHourly[key] == oldDataJsonHourly[key]) {
-    //       // do nothing
-    //     } else {
-    //       try {
-    //         var update = {}
-    //         update['hourly.' + key] = newDataJsonHourly[key]
-    //
-    //         await cryptoModel.update({
-    //           ticker: symbol
-    //         }, {
-    //           $set: update
-    //         },
-    //         function (err, success) {
-    //           if (err) console.log('error')
-    //         }
-    //         )
-    //       } catch (e) {
-    //         console.log('error2')
-    //       }
-    //     }
-    //   }
-    // }
+
+    for (const key in newDataJsonHourly) {
+      if (key === 'guppy') {
+        // if (newDataJsonHourly[key] !== oldDataJsonHourly[key]) {
+        try {
+          const update = {}
+          update[key] = newDataJsonHourly[key]
+          oldData['hourly'] = update
+        } catch (e) {
+          console.log('error updating the models')
+        }
+        // }
+      }
+    }
+
+    const signal = newDataJsonHourly['guppy']
+
+    // if we have a new guppy signal
+    if (oldDataJsonHourly['guppy'] !== newDataJsonHourly['guppy']) {
+      if (signal !== 'neutral') {
+        notify.sendSlackMessageMain(instance.id, signal, symbol, lastPrice)
+      }
+    }
+
     // }
   } catch (e) {
-    var dt = utils.dateTimeString()
+    const dt = utils.dateTimeString()
 
     if (e instanceof ccxt.DDoSProtection) {
       log.bright.yellow(instance.id, '[DDoS Protection] ' + e.message)
@@ -189,7 +180,7 @@ async function hourlyOlhcvCollection (symbol, instance) {
       } catch (e) {
         log.bright.yellow(dt, instance.id, symbol, '[Request Timeout] ')
         await hourlyOlhcvCollection(symbol, instance)
-        log(dt.blue, intance.id.green, symbol.green, 'success')
+        log(dt.blue, instance.id.green, symbol.green, 'success')
       }
     } else if (e instanceof ccxt.AuthenticationError) {
       log.bright.yellow(instance.id, '[Authentication Error] ' + e.message)
@@ -206,6 +197,28 @@ async function hourlyOlhcvCollection (symbol, instance) {
 }
 
 // -----------------------------------------------------------------------------
+
+async function collectData () {
+  await getAllTickers()
+    .then(async () => {
+      for (const index in tickerEndpoints) {
+        let symbol = tickerEndpoints[index].ticker
+        await getCandlesAndIndicators(symbol, bittrexInstance)
+      }
+    })
+  const dt = utils.dateTimeString()
+  const collectedString = 'Initial Ticker Data Collected'
+  log(dt.blue, collectedString.green)
+}
+
+// -----------------------------------------------------------------------------
+
+schedule.scheduleJob('*/44 * * * *', async function () {
+  for (const index in tickerEndpoints) {
+    let symbol = tickerEndpoints[index].ticker
+    await hourlyOlhcvCollection(symbol, bittrexInstance)
+  }
+})
 
 module.exports = {
   collectData: collectData

@@ -8,7 +8,7 @@ const slack = new SlackWebhook(slackWebhookURL, {
   }
 })
 
-function sendSlackMessageMain (exchange, signal, ticker, lastPrice, PL, profit) {
+function sendSlackMessageMain (exchange, signal, ticker, lastPrice) {
   slack.send({
     'attachments': [{
       'color': '#ffff00',
