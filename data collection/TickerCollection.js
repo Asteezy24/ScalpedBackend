@@ -101,7 +101,7 @@ async function getAllTickers () {
   const dt = utils.dateTimeString()
   log.bright.red(dt, 'Gathering all trading pairs to be used.')
   for (const exchangeIndex in finalMarketTickersAndSymbols) {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < finalMarketTickersAndSymbols[exchangeIndex].symbolsArray.length; i++) {
       const symbolForExchange = finalMarketTickersAndSymbols[exchangeIndex].symbolsArray[i]
       if (symbolForExchange.includes('BTC')) {
         let item = {
