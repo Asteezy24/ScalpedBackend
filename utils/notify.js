@@ -1,5 +1,5 @@
 const SlackWebhook = require('slack-webhook')
-const slackWebhookURL = 'https://hooks.slack.com/services/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'
+const slackWebhookURL = 'https://hooks.slack.com/services/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'
 const slack = new SlackWebhook(slackWebhookURL, {
   defaults: {
     username: 'Bot',
