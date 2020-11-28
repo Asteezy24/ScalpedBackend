@@ -163,6 +163,7 @@ async function scheduledCollection (symbol, instance, timeframe) {
     // if we have a new guppy signal
     if (oldDataJson['guppy'] !== newDataJson['guppy']) {
       if (signal !== 'neutral') {
+        console.log('Sent slack message for ' + symbol)
         notify.sendSlackMessageMain(instance.id, signal, symbol, lastPrice, timeframe)
       }
     }
