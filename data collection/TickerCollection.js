@@ -84,12 +84,15 @@ async function fetchCandles (exchangeInstance, symbol, timeframe) {
 
 async function getInitialCandlesAndIndicators (symbol, instance) {
   let hourlyCandles = await fetchCandles(instance, symbol, '1h')
-  let fourHourlyCandles = await fetchCandles(instance, symbol, '1d')
+  let dailyCandles = await fetchCandles(instance, symbol, '1d')
   const cryptoModel = {
     exchange: instance.id,
     ticker: symbol,
     hourly: {
       guppy: Indicators.GMMA(hourlyCandles.arrayOfClosePrices)
+    },
+    daily: {
+      guppy: Indicators.GMMA(dailyCandles.arrayOfClosePrices)
     }
   }
   technicalModels.push(cryptoModel)
@@ -123,8 +126,8 @@ async function scheduledCollection (symbol, instance, timeframe) {
     let timeframeIndex = ''
     if (timeframe === '1h') {
       timeframeIndex = 'hourly'
-    } else if (timeframe === '4h') {
-      timeframeIndex = 'fourHourly'
+    } else if (timeframe === '1d') {
+      timeframeIndex = 'daily'
     }
     let candles = await fetchCandles(instance, symbol, timeframe)
     let guppyUpdate = { guppy: Indicators.GMMA(candles.arrayOfClosePrices) }
@@ -208,8 +211,8 @@ async function collectData () {
 }
 
 // -----------------------------------------------------------------------------
-
-schedule.scheduleJob('*/19 * * * *', async function () {
+// hourly job
+schedule.scheduleJob('*/30 * * * *', async function () {
   for (const index in tickerEndpoints) {
     let symbol = tickerEndpoints[index].ticker
     await scheduledCollection(symbol, bittrexInstance, '1h')
@@ -218,14 +221,14 @@ schedule.scheduleJob('*/19 * * * *', async function () {
   const collectedString = 'Hourly Ticker Data Collected'
   log(dt.blue, collectedString.green)
 })
-
-schedule.scheduleJob('0 */4 * * *', async function () {
+// daily job
+schedule.scheduleJob('0 18 * * *', async function () {
   for (const index in tickerEndpoints) {
     let symbol = tickerEndpoints[index].ticker
-    await scheduledCollection(symbol, bittrexInstance, '4h')
+    await scheduledCollection(symbol, bittrexInstance, '1d')
   }
   const dt = utils.dateTimeString()
-  const collectedString = 'Four Hour Ticker Data Collected'
+  const collectedString = 'Daily Ticker Data Collected'
   log(dt.blue, collectedString.green)
 })
 
