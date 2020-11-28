@@ -12,7 +12,35 @@ function dateTimeString () {
   return '[' + moment(d).tz(myTimezone).format(myDatetimeFormat) + ']'
 }
 
+const bittrexPairs = [
+  'XRP/BTC',
+  'ETH/BTC',
+  'ADA/BTC',
+  'XLM/BTC',
+  'BSV/BTC',
+  'TUSD/BTC',
+  'LTC/BTC',
+  'LBC/BTC',
+  'XEM/BTC',
+  'DGB/BTC',
+  'TRX/BTC',
+  'NEO/BTC',
+  'BCH/BTC',
+  'LINK/BTC',
+  'XVG/BTC',
+  'WAVES/BTC',
+  'XMR/BTC',
+  'VTC/BTC',
+  'XHV/BTC',
+  'GNT/BTC',
+  'NMR/BTC',
+  'DASH/BTC',
+  'HBAR/BTC',
+  'RDD/BTC'
+]
+
 module.exports = {
   dateTimeString: dateTimeString,
-  formatDate: formatDate
+  formatDate: formatDate,
+  bittrexPairs: bittrexPairs
 }

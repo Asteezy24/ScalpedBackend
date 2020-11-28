@@ -20,9 +20,10 @@ const technicalModels = []
 let loadExchange = async function (exchange) {
   try {
     await exchange.loadMarkets()
+    let symbolArray = exchange.symbols.filter(symbol => (utils.bittrexPairs.includes(symbol)) && symbol.includes('BTC'))
     finalMarketTickersAndSymbols.push({
       exchange: exchange.id,
-      symbolsArray: exchange.symbols
+      symbolsArray: symbolArray
     })
   } catch (e) {
     if (e instanceof ccxt.DDoSProtection) {
@@ -44,7 +45,7 @@ let loadExchange = async function (exchange) {
 }
 
 // -----------------------------------------------------------------------------
-async function fetchOHLCV (exchangeInstance, symbol, timeframe) {
+async function fetchCandles (exchangeInstance, symbol, timeframe) {
   let arrayOfClosePrices = []
   let arrayOfOpenPrices = []
   let arrayOfHighPrices = []
@@ -81,13 +82,14 @@ async function fetchOHLCV (exchangeInstance, symbol, timeframe) {
 
 // -----------------------------------------------------------------------------
 
-async function getCandlesAndIndicators (symbol, instance) {
-  let candles = await fetchOHLCV(instance, symbol, '1h')
+async function getInitialCandlesAndIndicators (symbol, instance) {
+  let hourlyCandles = await fetchCandles(instance, symbol, '1h')
+  let fourHourlyCandles = await fetchCandles(instance, symbol, '1d')
   const cryptoModel = {
     exchange: instance.id,
     ticker: symbol,
     hourly: {
-      guppy: Indicators.GMMA(candles.arrayOfClosePrices)
+      guppy: Indicators.GMMA(hourlyCandles.arrayOfClosePrices)
     }
   }
   technicalModels.push(cryptoModel)
@@ -118,29 +120,34 @@ async function getAllTickers () {
 
 async function scheduledCollection (symbol, instance, timeframe) {
   try {
-    let candles = await fetchOHLCV(instance, symbol, timeframe)
-
+    let timeframeIndex = ''
+    if (timeframe === '1h') {
+      timeframeIndex = 'hourly'
+    } else if (timeframe === '4h') {
+      timeframeIndex = 'fourHourly'
+    }
+    let candles = await fetchCandles(instance, symbol, timeframe)
+    let guppyUpdate = { guppy: Indicators.GMMA(candles.arrayOfClosePrices) }
     const analysisOfData = {
       exchange: instance,
-      ticker: symbol,
-      hourly: {
-        guppy: Indicators.GMMA(candles.arrayOfClosePrices)
-      }
+      ticker: symbol
     }
+
+    analysisOfData[timeframeIndex] = guppyUpdate
 
     // const old
     const oldData = technicalModels.find(element => element.ticker === symbol)
-    const oldDataJsonHourly = oldData['hourly']
-    const newDataJsonHourly = analysisOfData['hourly']
+    const oldDataJson = oldData[timeframeIndex]
+    const newDataJson = analysisOfData[timeframeIndex]
     const lastPrice = candles.arrayOfClosePrices[candles.arrayOfClosePrices.length - 1]
 
-    for (const key in newDataJsonHourly) {
+    for (const key in newDataJson) {
       if (key === 'guppy') {
-        if (newDataJsonHourly[key] !== oldDataJsonHourly[key]) {
+        if (newDataJson[key] !== oldDataJson[key]) {
           try {
             const update = {}
-            update[key] = newDataJsonHourly[key]
-            oldData['hourly'] = update
+            update[key] = newDataJson[key]
+            oldData[timeframeIndex] = update
           } catch (e) {
             console.log('error updating the models')
           }
@@ -148,10 +155,10 @@ async function scheduledCollection (symbol, instance, timeframe) {
       }
     }
 
-    const signal = newDataJsonHourly['guppy']
+    const signal = newDataJson['guppy']
 
     // if we have a new guppy signal
-    if (oldDataJsonHourly['guppy'] !== newDataJsonHourly['guppy']) {
+    if (oldDataJson['guppy'] !== newDataJson['guppy']) {
       if (signal !== 'neutral') {
         notify.sendSlackMessageMain(instance.id, signal, symbol, lastPrice)
       }
@@ -164,11 +171,11 @@ async function scheduledCollection (symbol, instance, timeframe) {
     } else if (e instanceof ccxt.RequestTimeout) { // this happens a lot
       log.bright.yellow(dt, instance.id, symbol, '[Request Timeout] ')
       try {
-        await hourlyOlhcvCollection(symbol, instance)
+        await fetchCandles(instance, symbol, timeframe)
         log(dt.blue, instance.id.green, symbol.green, 'success')
       } catch (e) {
         log.bright.yellow(dt, instance.id, symbol, '[Request Timeout] ')
-        await hourlyOlhcvCollection(symbol, instance)
+        await fetchCandles(instance, symbol, timeframe)
         log(dt.blue, instance.id.green, symbol.green, 'success')
       }
     } else if (e instanceof ccxt.AuthenticationError) {
@@ -192,7 +199,7 @@ async function collectData () {
     .then(async () => {
       for (const index in tickerEndpoints) {
         let symbol = tickerEndpoints[index].ticker
-        await getCandlesAndIndicators(symbol, bittrexInstance)
+        await getInitialCandlesAndIndicators(symbol, bittrexInstance)
       }
     })
   const dt = utils.dateTimeString()
@@ -202,13 +209,23 @@ async function collectData () {
 
 // -----------------------------------------------------------------------------
 
-schedule.scheduleJob('*/30 * * * *', async function () {
+schedule.scheduleJob('*/19 * * * *', async function () {
   for (const index in tickerEndpoints) {
     let symbol = tickerEndpoints[index].ticker
     await scheduledCollection(symbol, bittrexInstance, '1h')
   }
   const dt = utils.dateTimeString()
   const collectedString = 'Hourly Ticker Data Collected'
+  log(dt.blue, collectedString.green)
+})
+
+schedule.scheduleJob('0 */4 * * *', async function () {
+  for (const index in tickerEndpoints) {
+    let symbol = tickerEndpoints[index].ticker
+    await scheduledCollection(symbol, bittrexInstance, '4h')
+  }
+  const dt = utils.dateTimeString()
+  const collectedString = 'Four Hour Ticker Data Collected'
   log(dt.blue, collectedString.green)
 })
 
