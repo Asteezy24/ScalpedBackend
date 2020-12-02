@@ -25,7 +25,7 @@ function exponentialMovingAverage (period, values, lastPrice) {
 
 function emaForGuppy (period, values) {
   const EMA = technicalindicators.EMA
-  var ema = EMA.calculate({
+  const ema = EMA.calculate({
     period: period,
     values: values
   })
@@ -34,17 +34,16 @@ function emaForGuppy (period, values) {
 }
 
 function GMMA (arrayOfClosePrices) {
-  var traderEMA3 = emaForGuppy(3, arrayOfClosePrices.slice(3))
-  var traderEMA12 = emaForGuppy(12, arrayOfClosePrices.slice(12))
-  var investorEMA30 = emaForGuppy(30, arrayOfClosePrices.slice(30))
-  var investorEMA50 = emaForGuppy(50, arrayOfClosePrices.slice(50))
+  const traderEMA3 = emaForGuppy(3, arrayOfClosePrices.slice(3))
+  const traderEMA12 = emaForGuppy(12, arrayOfClosePrices.slice(12))
+  const investorEMA30 = emaForGuppy(30, arrayOfClosePrices.slice(30))
+  const investorEMA50 = emaForGuppy(50, arrayOfClosePrices.slice(50))
 
-  var analysis = indicatorAnalysis.guppyAnalysis(traderEMA3, traderEMA12, investorEMA30, investorEMA50)
-  return analysis
+  return indicatorAnalysis.guppyAnalysis(traderEMA3, traderEMA12, investorEMA30, investorEMA50)
 }
 
 function isBuyEntrySignal (lastPrice, arrayOfHighPrices) {
-  var max_of_array = Math.max(...arrayOfHighPrices) // high from the last 20 periods
+  const max_of_array = Math.max(...arrayOfHighPrices) // high from the last 20 periods
 
   if (lastPrice > max_of_array) {
     console.log('!!!!!!!!!!!!!!!!!!!!!!!!')

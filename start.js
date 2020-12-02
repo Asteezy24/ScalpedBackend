@@ -13,6 +13,7 @@ const strategies = require('./routes/route').strategies
 const mongoose = require('mongoose')
 const morgan = require('morgan')
 const ansi = require('ansicolor').nice
+const remoteNotificationProvider = require('./utils/remoteNotifications')
 
 dotenv.config()
 app.use(bodyParser.json())
@@ -87,22 +88,24 @@ app.listen(process.env.PORT, () => {
   const dt = utils.dateTimeString()
   log(dt.blue, 'Server is live on port 3000'.green)
   TickerController.collectData()
+  remoteNotificationProvider.send()
 })
 
-// function blastMessage () {
-//   wsServer.connections.forEach(function each (client) {
-//     console.log(client.remoteAddress)
-//     const random = strategies[Math.floor(Math.random() * strategies.length)]
-//     client.send(JSON.stringify(random))
-//   })
-// }
+function blastMessage () {
+  remoteNotificationProvider.send(remoteNotificationProvider.note, router.deviceIds[0]).then((result) => {})
+  wsServer.connections.forEach(function each (client) {
+    console.log(client.remoteAddress)
+    const random = strategies[Math.floor(Math.random() * strategies.length)]
+    client.send(JSON.stringify(random))
+  })
+}
 
-// setInterval(function () {
-//   /// call your function here
-//   if (strategies[0] != undefined) {
-//     blastMessage()
-//   }
-// }, 12000)
+setInterval(function () {
+  /// call your function here
+  if (strategies[0] != undefined) {
+    blastMessage()
+  }
+}, 12000)
 
 wsServer.on('request', function (request) {
   socketHandler.handleConnection(request)

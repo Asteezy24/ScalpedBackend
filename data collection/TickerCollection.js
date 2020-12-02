@@ -199,13 +199,13 @@ async function scheduledCollection (symbol, instance, timeframe) {
 // -----------------------------------------------------------------------------
 
 async function collectData () {
-  await getAllTickers()
-    .then(async () => {
-      for (const index in tickerEndpoints) {
-        let symbol = tickerEndpoints[index].ticker
-        await getInitialCandlesAndIndicators(symbol, bittrexInstance)
-      }
-    })
+  // await getAllTickers()
+  //   .then(async () => {
+  //     for (const index in tickerEndpoints) {
+  //       let symbol = tickerEndpoints[index].ticker
+  //       await getInitialCandlesAndIndicators(symbol, bittrexInstance)
+  //     }
+  //   })
   const dt = utils.dateTimeString()
   const collectedString = 'Initial Ticker Data Collected'
   log(dt.blue, collectedString.green)
