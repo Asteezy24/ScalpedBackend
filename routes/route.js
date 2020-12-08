@@ -1,6 +1,5 @@
 const router = require('express').Router()
-
-const deviceIds = []
+const User = require('../mongoose/User')
 const strategies = []
 
 // existing user log in
@@ -13,13 +12,23 @@ router.post('/strategy/', (req, res) => {
 
 router.post('/notification/provider', (req, res) => {
   let deviceId = req.body.id
-  deviceIds.push(deviceId)
-  console.log({ error: false, message: 'New Device Token Received!' })
+  let username = req.body.username
+  // find username, and update device token
+  let newData = {
+    username: username,
+    deviceToken: deviceId
+  }
+
+  User.findOneAndUpdate({ username: username }, newData, (err, user) => {
+    if (err) return
+    if (user !== null) {
+      console.log({ error: false, message: 'New Device Token Received!' })
+    }
+  })
   return res.status(200).send({ error: false, message: 'Device Token Sent!' })
 })
 
 module.exports = {
   router: router,
-  strategies: strategies,
-  deviceIds: deviceIds
+  strategies: strategies
 }

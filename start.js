@@ -11,7 +11,8 @@ const http = require('http')
 const socketHandler = require('./utils/socketHandler')
 const strategies = require('./routes/route').strategies
 const remoteNotificationProvider = require('./utils/remoteNotifications')
-// const mongoose = require('mongoose')
+const User = require('./mongoose/User')
+const mongoose = require('mongoose')
 // const morgan = require('morgan')
 require('ansicolor').nice
 
@@ -53,19 +54,17 @@ const server = http.createServer(function (request, response) {
   response.end()
 })
 
-// for now we will not connect to mongoose but we will pretend we did
-// mongoose.connect(process.env.DATABASE, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true
-// }, () => {
-//     const dt = utils.dateTimeString()
-//     const mongooseSuccess = `mongoose connection established.`
-//     log(dt.blue, mongooseSuccess.green)
-// })
-// mongoose.Promise = global.Promise
-// mongoose.connection.on('error', (err) => {
-//     console.error(`Error!: ${err.message}`)
-// }
+mongoose.connect(process.env.DATABASE, {
+  useNewUrlParser: true
+}, () => {
+  const dt = utils.dateTimeString()
+  const mongooseSuccess = 'Mongoose connection established.'
+  log(dt.blue, mongooseSuccess.green)
+})
+mongoose.Promise = global.Promise
+mongoose.connection.on('error', (err) => {
+  console.error(`Error!: ${err.message}`)
+})
 
 server.listen(1337, function () {
   const dt = utils.dateTimeString()
@@ -88,6 +87,7 @@ app.listen(process.env.PORT, () => {
   const dt = utils.dateTimeString()
   log(dt.blue, 'Server is live on port 3000'.green)
   TickerController.collectData()
+  createDummyUser()
 })
 
 function sendSocketMessage (sentiment, underlying) {
@@ -109,4 +109,29 @@ wsServer.on('request', function (request) {
 module.exports = {
   app: app,
   sendSocketMessage: sendSocketMessage
+}
+
+function createDummyUser () {
+  User.findOne({ username: 'alex' }, (err, user) => {
+    if (err) return
+    if (user === null) {
+      const user = new User({
+        username: 'alex',
+        deviceToken: '0'
+      })
+      user.save((err) => {
+        if (err) {
+          if (err.name === 'MongoError' && err.code === 11000) {
+            console.log('User already registered')
+          }
+          console.log(err.message)
+          return
+        }
+        console.log('New user created!')
+      })
+    } else {
+      console.log('user exists already')
+    }
+  })
+
 }
