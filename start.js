@@ -10,9 +10,9 @@ const WebSocketServer = require('websocket').server
 const http = require('http')
 const socketHandler = require('./utils/socketHandler')
 const strategies = require('./routes/route').strategies
-const mongoose = require('mongoose')
-const morgan = require('morgan')
-const ansi = require('ansicolor').nice
+// const mongoose = require('mongoose')
+// const morgan = require('morgan')
+require('ansicolor').nice
 const remoteNotificationProvider = require('./utils/remoteNotifications')
 
 dotenv.config()
@@ -92,7 +92,7 @@ app.listen(process.env.PORT, () => {
 })
 
 function blastMessage () {
-  remoteNotificationProvider.send(remoteNotificationProvider.note, router.deviceIds[0]).then((result) => {})
+  remoteNotificationProvider.send(remoteNotificationProvider.note, router.deviceIds[0])
   wsServer.connections.forEach(function each (client) {
     console.log(client.remoteAddress)
     const random = strategies[Math.floor(Math.random() * strategies.length)]
@@ -101,8 +101,7 @@ function blastMessage () {
 }
 
 setInterval(function () {
-  /// call your function here
-  if (strategies[0] != undefined) {
+  if (strategies[0] !== undefined) {
     blastMessage()
   }
 }, 12000)

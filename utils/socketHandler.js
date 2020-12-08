@@ -1,5 +1,3 @@
-const Strategy = require('../mongoose/Strategy')
-
 function originIsAllowed (origin) {
   // put logic here to detect whether the specified origin is allowed.
   return true
