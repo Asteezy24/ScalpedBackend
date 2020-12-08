@@ -12,20 +12,22 @@ const options = {
 
 const apnProvider = new apn.Provider(options)
 
-const note = new apn.Notification()
+function createNote () {
+  const note = new apn.Notification()
+  note.expiry = Math.floor(Date.now() / 1000) + 3600 // Expires 1 hour from now.
+  // note.badge = 69
+  note.sound = 'ping.aiff'
+  note.alert = '\u1F440 You have a new crypto alert'
+  note.payload = { 'action': 'John Appleseed' }
+  note.topic = 'com.AlexStevens.OrionCubed'
+  return note
+}
 
-note.expiry = Math.floor(Date.now() / 1000) + 3600 // Expires 1 hour from now.
-// note.badge = 69
-note.sound = 'ping.aiff'
-note.alert = '\uD83D\uDCE7 \u2709 You have a new crypto alert'
-note.payload = { 'messageFrom': 'John Appleseed' }
-note.topic = 'com.AlexStevens.OrionCubed'
-
-function send () {
+function send (note) {
   apnProvider.send(note, deviceIds[0]).then((result) => {})
 }
 
 module.exports = {
   send: send,
-  note: note
+  createNote: createNote
 }

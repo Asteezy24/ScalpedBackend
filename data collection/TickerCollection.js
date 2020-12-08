@@ -3,6 +3,9 @@ const utils = require('../utils/utils')
 const Indicators = require('../indicators/indicators')
 const schedule = require('node-schedule')
 const notify = require('../utils/notify')
+const remoteNotifications = require('../utils/remoteNotifications')
+const app = require('../start')
+
 const log = require('ololog').configure({
   locate: false
 })
@@ -163,7 +166,13 @@ async function scheduledCollection (symbol, instance, timeframe) {
     // if we have a new guppy signal
     if (oldDataJson['guppy'] !== newDataJson['guppy']) {
       if (signal !== 'neutral') {
-        console.log('Sent slack message for ' + symbol)
+        console.log('blasting message for ' + symbol)
+        // socket
+        app.sendSocketMessage('', '')
+        // push notification
+        const note = remoteNotifications.createNote()
+        remoteNotifications.send(note)
+        // slack
         notify.sendSlackMessageMain(instance.id, signal, symbol, lastPrice, timeframe)
       }
     }
