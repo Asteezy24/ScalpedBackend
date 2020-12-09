@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "description": "I love sockets",
   "scripts": {
-    "clean": "rm -rf build && mkdir build",
-    "build-server": "babel -d ./build ./server -s",
-    "build": "npm run clean && npm run build-server",
-    "dev": "nodemon start --exec babel-node",
-    "start": "node ./build/start.js"
+    "start": "node ./bin/www",
+    "dev": "nodemon ./bin/www",
+    "test": "nyc _mocha --timeout 10000 --exit --report lcovonly -- -R spec",
+    "lint": "eslint --fix --config .eslintrc.json \"**/*.js\""
   },
   "private": true,
   "engines": {
@@ -22,6 +21,7 @@
     "body-parser": "^1.18.3",
     "ccxt": "^1.38.20",
     "config": "^3.0.0",
+    "cookie-parser": "^1.4.5",
     "deo": "0.0.2",
     "dotenv": "^8.2.0",
     "express": "^4.16.4",
