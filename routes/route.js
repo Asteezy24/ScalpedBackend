@@ -5,7 +5,6 @@ const Strategy = require('../mongoose/Strategy')
 router.post('/strategy/', (req, res) => {
   let strategy = new Strategy({
     identifier: req.body.identifier,
-    underlying: req.body.underlying,
     action: req.body.action,
     alerts: []
   })

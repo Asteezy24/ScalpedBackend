@@ -3,14 +3,12 @@ const log = require('ololog').configure({ locate: false })
 const utils = require('./utils/utils')
 const bodyParser = require('body-parser')
 const express = require('express')
-const TickerController = require('./data collection/TickerCollection')
+const TickerController = require('./controllers/TickerCollection')
 const app = express()
 const router = require('./routes/route')
 const WebSocketServer = require('websocket').server
 const http = require('http')
 const socketHandler = require('./utils/socketHandler')
-const strategies = require('./routes/route').strategies
-const remoteNotificationProvider = require('./utils/remoteNotifications')
 const User = require('./mongoose/User')
 const mongoose = require('mongoose')
 // const morgan = require('morgan')
@@ -106,11 +104,6 @@ wsServer.on('request', function (request) {
   socketHandler.handleConnection(request)
 })
 
-module.exports = {
-  app: app,
-  sendSocketMessage: sendSocketMessage
-}
-
 function createDummyUser () {
   User.findOne({ username: 'alex' }, (err, user) => {
     if (err) return
@@ -134,5 +127,9 @@ function createDummyUser () {
       console.log('user exists already')
     }
   })
+}
 
+module.exports = {
+  app: app,
+  sendSocketMessage: sendSocketMessage
 }

@@ -2,9 +2,8 @@ const ccxt = require('ccxt')
 const utils = require('../utils/utils')
 const Indicators = require('../indicators/indicators')
 const schedule = require('node-schedule')
-const notify = require('../utils/notify')
-const remoteNotifications = require('../utils/remoteNotifications')
-const app = require('../start')
+const strategyController = require('./StrategyController')
+// const app = require('../start')
 
 const log = require('ololog').configure({
   locate: false
@@ -166,14 +165,8 @@ async function scheduledCollection (symbol, instance, timeframe) {
     // if we have a new guppy signal
     if (oldDataJson['guppy'] !== newDataJson['guppy']) {
       if (signal !== 'neutral') {
-        console.log('blasting message for ' + symbol)
-        // socket
-        app.sendSocketMessage('', '')
-        // push notification
-        const note = remoteNotifications.createNote()
-        remoteNotifications.send(note)
-        // slack
-        notify.sendSlackMessageMain(instance.id, signal, symbol, lastPrice, timeframe)
+        // app.sendSocketMessage('', '')
+        strategyController.strategyTriggered(instance.id, signal, symbol, lastPrice, timeframe)
       }
     }
   } catch (e) {
@@ -208,13 +201,13 @@ async function scheduledCollection (symbol, instance, timeframe) {
 // -----------------------------------------------------------------------------
 
 async function collectData () {
-  // await getAllTickers()
-  //   .then(async () => {
-  //     for (const index in tickerEndpoints) {
-  //       let symbol = tickerEndpoints[index].ticker
-  //       await getInitialCandlesAndIndicators(symbol, bittrexInstance)
-  //     }
-  //   })
+  await getAllTickers()
+    .then(async () => {
+      for (const index in tickerEndpoints) {
+        let symbol = tickerEndpoints[index].ticker
+        await getInitialCandlesAndIndicators(symbol, bittrexInstance)
+      }
+    })
   const dt = utils.dateTimeString()
   const collectedString = 'Initial Ticker Data Collected'
   log(dt.blue, collectedString.green)
@@ -222,7 +215,7 @@ async function collectData () {
 
 // -----------------------------------------------------------------------------
 // hourly job
-schedule.scheduleJob('*/30 * * * *', async function () {
+schedule.scheduleJob('*/21 * * * *', async function () {
   for (const index in tickerEndpoints) {
     let symbol = tickerEndpoints[index].ticker
     await scheduledCollection(symbol, bittrexInstance, '1h')
@@ -243,5 +236,6 @@ schedule.scheduleJob('0 18 * * *', async function () {
 })
 
 module.exports = {
-  collectData: collectData
+  collectData: collectData,
+  bittrexInstance: bittrexInstance
 }

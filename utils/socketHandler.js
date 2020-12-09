@@ -3,7 +3,7 @@ function originIsAllowed (origin) {
   return true
 }
 
-function handleConnection (request, deviceIds) {
+function handleConnection (request) {
   if (!originIsAllowed(request.origin)) {
     // Make sure we only accept requests from an allowed origin
     request.reject()

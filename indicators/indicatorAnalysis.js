@@ -1,8 +1,8 @@
 function guppyAnalysis (traderEMA3, traderEMA12, investorEMA30, investorEMA50) {
   if (traderEMA3 > investorEMA30 && traderEMA12 > investorEMA30) {
-    return 'bullish'
+    return 'Buy'
   } else if (traderEMA3 < investorEMA30 && traderEMA12 < investorEMA30) {
-    return 'bearish'
+    return 'Sell'
   } else {
     return 'neutral'
   }
