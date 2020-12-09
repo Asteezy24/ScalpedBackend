@@ -117,7 +117,8 @@ function createDummyUser () {
     if (user === null) {
       const user = new User({
         username: 'alex',
-        deviceToken: '0'
+        deviceToken: '0',
+        strategies: []
       })
       user.save((err) => {
         if (err) {

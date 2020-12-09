@@ -1,13 +1,49 @@
 const router = require('express').Router()
 const User = require('../mongoose/User')
-const strategies = []
+const Strategy = require('../mongoose/Strategy')
 
-// existing user log in
 router.post('/strategy/', (req, res) => {
-  let strat = { action: req.body.action, underlying: req.body.underlying }
-  strategies.push(strat)
-  console.log({ error: false, message: 'New Strategy Created!' })
-  return res.status(200).send({ error: false, message: 'New Strategy Created!' })
+  let strategy = new Strategy({
+    identifier: req.body.identifier,
+    underlying: req.body.underlying,
+    action: req.body.action,
+    alerts: []
+  })
+
+  // save strategy as a whole
+  Strategy.findOne(strategy, (err, strat) => {
+    if (err) return
+    if (strat === null) {
+      strategy.save((err) => {
+        if (err) {
+          if (err.name === 'MongoError' && err.code === 11000) {
+            console.log('strat already registered')
+          }
+          console.log(err.message)
+        } else {
+          console.log('New strat saved!')
+        }
+      })
+    } else {
+      console.log('strat exists already')
+    }
+  })
+
+  // save strategy to user
+  let username = req.body.username
+  User.findOne({ username: username }, (err, user) => {
+    if (err) return
+    if (user !== null) {
+      user.strategies.push(strategy)
+      user.save((err) => {
+        if (!err) {
+          console.log({ error: false, message: 'New Strategy Created!' })
+        }
+      })
+      return res.status(200).send({ error: false, message: 'New Strategy Created!' })
+    }
+    return res.status(400).send({ error: true, message: 'Error Creating Strategy' })
+  })
 })
 
 router.post('/notification/provider', (req, res) => {
@@ -29,6 +65,5 @@ router.post('/notification/provider', (req, res) => {
 })
 
 module.exports = {
-  router: router,
-  strategies: strategies
+  router: router
 }
