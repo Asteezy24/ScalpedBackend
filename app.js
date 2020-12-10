@@ -36,12 +36,6 @@ app.use('/api/', apiRouter)
 
 // error handlers
 // throw 404 if URL not found
-// app.use((req, res, next) => {
-//   console.log('huh')
-//   // const err = new Error("Not Found")
-//   // err.status = 404
-//   // next(err)
-// })
 app.all('*', function (req, res) {
   return apiResponse.notFoundResponse(res, 'Endpoint not found')
 })

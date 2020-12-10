@@ -1,8 +1,7 @@
-const express = require("express")
-// const BookController = require("../controllers/BookController");
-
+const express = require('express')
+const NotificationController = require('../controllers/NotificationController')
 const router = express.Router()
 
-router.get("/update", () => {})
+router.post('/updateToken/', NotificationController.updateTokenForUser)
 
 module.exports = router

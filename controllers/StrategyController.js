@@ -6,7 +6,7 @@ const apiResponse = require('../helpers/apiResponse')
 const mongoose = require('mongoose')
 mongoose.set('useFindAndModify', false)
 
-// Book Schema
+// Strategy Schema
 function StrategyData (data) {
   this.identifier = data.id
   this.action = data.action
@@ -14,7 +14,7 @@ function StrategyData (data) {
 }
 
 /**
- * Book save.
+ * Strategy save.
  *
  * @param {string}      id
  * @param {string}      action
@@ -46,7 +46,7 @@ exports.strategyCreate = [
       if (!errors.isEmpty()) {
         return apiResponse.validationErrorWithData(res, 'Validation Error.', errors.array())
       } else {
-        // Save book.
+        // Save strategy.
         strategy.save(function (err) {
           if (err) { return apiResponse.ErrorResponse(res, err) }
           let strategyData = new StrategyData(strategy)
