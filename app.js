@@ -8,6 +8,9 @@ const logger = require('morgan')
 const log = require('./helpers/utils').log
 const bodyParser = require('body-parser')
 
+const User = require('./mongoose/User')
+const TickerCollection = require('./data collection/TickerCollection')
+
 // DB connection
 const MONGODB_URL = process.env.MONGODB_URL
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true }).then(() => {
@@ -47,9 +50,6 @@ app.use((err, req, res) => {
 })
 
 app.use(express.static(path.join(__dirname, 'public')))
-module.exports = app
-
-const User = require('./mongoose/User')
 
 function createDummyUser () {
   User.findOne({ username: 'alex' }, (err, user) => {
@@ -76,4 +76,9 @@ function createDummyUser () {
   })
 }
 
+
+// start the data collection process
 createDummyUser()
+TickerCollection.collectData()
+
+module.exports = app

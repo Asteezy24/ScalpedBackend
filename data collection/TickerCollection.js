@@ -2,15 +2,11 @@ const ccxt = require('ccxt')
 const utils = require('../helpers/utils')
 const Indicators = require('../indicators/indicators')
 const schedule = require('node-schedule')
-const strategyController = require('./StrategyController')
-// const app = require('../start')
-
-const log = require('ololog').configure({
-  locate: false
-})
+const log = require('../helpers/utils').log
 const bittrexInstance = new (ccxt)['bittrex']({
   enableRateLimit: true
 })
+const notify = require('../helpers/notify')
 
 // User Preferences
 let finalMarketTickersAndSymbols = []
@@ -29,17 +25,17 @@ let loadExchange = async function (exchange) {
     })
   } catch (e) {
     if (e instanceof ccxt.DDoSProtection) {
-      log.bright.yellow(exchange.id, '[DDoS Protection] ' + e.message)
+      log(exchange.id + ' [DDoS Protection] ' + e.message)
     } else if (e instanceof ccxt.RequestTimeout) {
-      log.bright.yellow(exchange.id, '[Request Timeout] ' + e.message)
+      log(exchange.id + ' [Request Timeout] ' + e.message)
     } else if (e instanceof ccxt.AuthenticationError) {
-      log.bright.yellow(exchange.id, '[Authentication Error] ' + e.message)
+      log(exchange.id + ' [Authentication Error] ' + e.message)
     } else if (e instanceof ccxt.ExchangeNotAvailable) {
-      log.bright.yellow(exchange.id, '[Exchange Not Available] ' + e.message)
+      log(exchange.id + ' [Exchange Not Available] ' + e.message)
     } else if (e instanceof ccxt.ExchangeError) {
-      log.bright.yellow(exchange.id, '[Exchange Error] ' + e.message)
+      log(exchange.id + ' [Exchange Error] ' + e.message)
     } else if (e instanceof ccxt.NetworkError) {
-      log.bright.yellow(exchange.id, '[Network Error] ' + e.message)
+      log(exchange.id + ' [Network Error] ' + e.message)
     } else {
       throw e
     }
@@ -57,7 +53,7 @@ async function fetchCandles (exchangeInstance, symbol, timeframe) {
   let ohlcv = await exchangeInstance.fetchOHLCV(symbol, timeframe)
 
   if (ohlcv === undefined) {
-    console.log('We got an empty ccxt response')
+    log('We got an empty ccxt response')
     return
   }
 
@@ -105,8 +101,7 @@ async function getInitialCandlesAndIndicators (symbol, instance) {
 async function getAllTickers () {
   // instantiate all exchanges
   await loadExchange(bittrexInstance)
-  const dt = utils.dateTimeString()
-  log.bright.red(dt, 'Gathering all trading pairs to be used.')
+  log('Gathering all trading pairs to be used.')
   for (const exchangeIndex in finalMarketTickersAndSymbols) {
     for (let i = 0; i < finalMarketTickersAndSymbols[exchangeIndex].symbolsArray.length; i++) {
       const symbolForExchange = finalMarketTickersAndSymbols[exchangeIndex].symbolsArray[i]
@@ -154,7 +149,7 @@ async function scheduledCollection (symbol, instance, timeframe) {
             update[key] = newDataJson[key]
             oldData[timeframeIndex] = update
           } catch (e) {
-            console.log('error updating the models')
+            log('error updating the models')
           }
         }
       }
@@ -166,34 +161,32 @@ async function scheduledCollection (symbol, instance, timeframe) {
     if (oldDataJson['guppy'] !== newDataJson['guppy']) {
       if (signal !== 'neutral') {
         // app.sendSocketMessage('', '')
-        strategyController.strategyTriggered(instance.id, signal, symbol, lastPrice, timeframe)
+        notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
       }
     }
   } catch (e) {
-    const dt = utils.dateTimeString()
-
     if (e instanceof ccxt.DDoSProtection) {
-      log.bright.yellow(instance.id, '[DDoS Protection] ' + e.message)
+      log(instance.id + ' [DDoS Protection] ' + e.message)
     } else if (e instanceof ccxt.RequestTimeout) { // this happens a lot
-      log.bright.yellow(dt, instance.id, symbol, '[Request Timeout] ')
+      log(instance.id + symbol + ' [Request Timeout] ')
       try {
         await fetchCandles(instance, symbol, timeframe)
-        log(dt.blue, instance.id.green, symbol.green, 'success')
+        log(instance.id + symbol, 'success')
       } catch (e) {
-        log.bright.yellow(dt, instance.id, symbol, '[Request Timeout] ')
+        log(instance.id + symbol + ' [Request Timeout] ')
         await fetchCandles(instance, symbol, timeframe)
-        log(dt.blue, instance.id.green, symbol.green, 'success')
+        log(instance.id + symbol + 'success')
       }
     } else if (e instanceof ccxt.AuthenticationError) {
-      log.bright.yellow(instance.id, '[Authentication Error] ' + e.message)
+      log(instance.id + ' [Authentication Error] ' + e.message)
     } else if (e instanceof ccxt.ExchangeNotAvailable) {
-      log.bright.yellow(instance.id, '[Exchange Not Available] ' + e.message)
+      log(instance.id + ' [Exchange Not Available] ' + e.message)
     } else if (e instanceof ccxt.ExchangeError) {
-      log.bright.yellow(instance.id, '[Exchange Error] ' + e.message)
+      log(instance.id + ' [Exchange Error] ' + e.message)
     } else if (e instanceof ccxt.NetworkError) {
-      log.bright.yellow(instance.id, '[Network Error] ' + e.message)
+      log(instance.id + ' [Network Error] ' + e.message)
     } else {
-      console.log(e)
+      log(e)
     }
   }
 }
@@ -208,9 +201,7 @@ async function collectData () {
         await getInitialCandlesAndIndicators(symbol, bittrexInstance)
       }
     })
-  const dt = utils.dateTimeString()
-  const collectedString = 'Initial Ticker Data Collected'
-  log(dt.blue, collectedString.green)
+  log('Initial Ticker Data Collected')
 }
 
 // -----------------------------------------------------------------------------
@@ -220,9 +211,7 @@ schedule.scheduleJob('*/21 * * * *', async function () {
     let symbol = tickerEndpoints[index].ticker
     await scheduledCollection(symbol, bittrexInstance, '1h')
   }
-  const dt = utils.dateTimeString()
-  const collectedString = 'Hourly Ticker Data Collected'
-  log(dt.blue, collectedString.green)
+  log('Hourly Ticker Data Collected')
 })
 // daily job
 schedule.scheduleJob('0 18 * * *', async function () {
@@ -230,9 +219,7 @@ schedule.scheduleJob('0 18 * * *', async function () {
     let symbol = tickerEndpoints[index].ticker
     await scheduledCollection(symbol, bittrexInstance, '1d')
   }
-  const dt = utils.dateTimeString()
-  const collectedString = 'Daily Ticker Data Collected'
-  log(dt.blue, collectedString.green)
+  log('Daily Ticker Data Collected')
 })
 
 module.exports = {

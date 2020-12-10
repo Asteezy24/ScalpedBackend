@@ -25,7 +25,7 @@ app.set('port', port)
 
 const server = http.createServer(app)
 const socket = http.createServer(function (request, response) {
-  log(' Received request for ' + request.url)
+  log('Received request for ' + request.url)
   response.end()
 })
 
@@ -143,13 +143,13 @@ function handleConnection (request) {
   }
 
   const connection = request.accept('echo-protocol', request.origin)
-  log(' Connection accepted from ' + connection.remoteAddress)
+  log('Connection accepted from ' + connection.remoteAddress)
   connection.on('message', function (message) {
     if (message.type === 'utf8') {
       // save strategy
-      const strat = JSON.stringify({ action: 'Buy', underlying: 'AAPL' })
+      const message = JSON.stringify({ message: 'hi' })
       log('Received Message: ' + message.utf8Data)
-      connection.sendUTF(strat)
+      connection.sendUTF(message)
     } else if (message.type === 'binary') {
       log('Received Binary Message of ' + message.binaryData.length + ' bytes')
       connection.sendBytes(message.binaryData)
@@ -158,6 +158,6 @@ function handleConnection (request) {
     }
   })
   connection.on('close', function (reasonCode, description) {
-    log(' Peer ' + connection.remoteAddress + ' disconnected.')
+    log('Peer ' + connection.remoteAddress + ' disconnected.')
   })
 }
