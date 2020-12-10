@@ -50,71 +50,14 @@ app.use(express.static(path.join(__dirname, 'public')))
 module.exports = app
 
 //
-// const utils = require("./utils/utils")
-// const bodyParser = require("body-parser")
-// const TickerController = require("./controllers/TickerCollection")
-// const router = require("./routes/route")
-// const WebSocketServer = require("websocket").server
-// const http = require("http")
-// const socketHandler = require("./utils/socketHandler")
-// const User = require("./mongoose/User")
-// // const morgan = require('morgan')
-// require("ansicolor").nice
-//
-// dotenv.config()
-// app.use(bodyParser.json())
-// app.use(router.router)
-// app.use(log)
-// app.use((req, res, next) => {
-// 	const err = new Error("Not Found")
-// 	err.status = 404
-// 	next(err)
-// })
-//
-// // error handlers
-// if (app.get("env") === "development") {
-// 	app.use((err, req, res, next) => {
-// 		res.status(err.status || 500)
-// 		if (err.status !== 404) {
-// 			log(err) // eslint-disable-line no-console
-// 		}
-// 		res.json({
-// 			message: err.message,
-// 			error: true
-// 		})
-// 	})
-// }
-// // catch 404 and forward to error handler
-// app.use((err, req, res, next) => {
-// 	res.status(err.status || 500)
-// 	res.json({
-// 		message: err.message,
-// 		error: true
-// 	})
-// })
-//
 // const server = http.createServer(function (request, response) {
 // 	console.log((new Date()) + " Received request for " + request.url)
 // 	response.writeHead(404)
 // 	response.end()
 // })
 //
-// mongoose.connect(process.env.MONGODB_URL, {
-// 	useNewUrlParser: true
-// }, () => {
-// 	const dt = utils.dateTimeString()
-// 	const mongooseSuccess = "Mongoose connection established."
-// 	log(dt.blue, mongooseSuccess.green)
-// })
-// mongoose.Promise = global.Promise
-// mongoose.connection.on("error", (err) => {
-// 	console.error(`Error!: ${err.message}`)
-// })
 //
-// server.listen(1337, function () {
-// 	const dt = utils.dateTimeString()
-// 	log(dt.blue, "Websocket is live on port 1337".green)
-// })
+
 //
 // const wsServer = new WebSocketServer({
 // 	httpServer: server,
