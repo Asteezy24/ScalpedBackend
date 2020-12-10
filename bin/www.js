@@ -9,6 +9,7 @@ const WebSocketServer = require('websocket').server
 const app = require('../app')
 const debug = require('debug')('Socky:server')
 const http = require('http')
+const log = require('../helpers/utils').log
 
 /**
  * Get port from environment and store in Express.
@@ -24,7 +25,7 @@ app.set('port', port)
 
 const server = http.createServer(app)
 const socket = http.createServer(function (request, response) {
-  console.log((new Date()) + ' Received request for ' + request.url)
+  log(' Received request for ' + request.url)
   response.end()
 })
 
@@ -137,26 +138,26 @@ function handleConnection (request) {
   if (!originIsAllowed(request.origin)) {
     // Make sure we only accept requests from an allowed origin
     request.reject()
-    console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.')
+    log('Connection from origin ' + request.origin + ' rejected.')
     return
   }
 
   const connection = request.accept('echo-protocol', request.origin)
-  console.log((new Date()) + ' Connection accepted.')
+  log(' Connection accepted from ' + connection.remoteAddress)
   connection.on('message', function (message) {
     if (message.type === 'utf8') {
       // save strategy
       const strat = JSON.stringify({ action: 'Buy', underlying: 'AAPL' })
-      console.log('Received Message: ' + message.utf8Data)
+      log('Received Message: ' + message.utf8Data)
       connection.sendUTF(strat)
     } else if (message.type === 'binary') {
-      console.log('Received Binary Message of ' + message.binaryData.length + ' bytes')
+      log('Received Binary Message of ' + message.binaryData.length + ' bytes')
       connection.sendBytes(message.binaryData)
     } else {
-      console.log('what is this')
+      log('unexpected format found')
     }
   })
   connection.on('close', function (reasonCode, description) {
-    console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.')
+    log(' Peer ' + connection.remoteAddress + ' disconnected.')
   })
 }

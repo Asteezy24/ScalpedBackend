@@ -1,4 +1,6 @@
 let moment = require('moment-timezone')
+const logger = require('ololog').configure({ locate: false })
+require('ansicolor').nice
 
 const formatDate = (epoch) => {
   let dateObj = new Date(Number(epoch))
@@ -10,6 +12,11 @@ function dateTimeString () {
   let myTimezone = 'America/Toronto'
   let myDatetimeFormat = 'YYYY-MM-DD hh:mm:ss a z'
   return '[' + moment(d).tz(myTimezone).format(myDatetimeFormat) + ']'
+}
+
+function log (message) {
+  const dt = dateTimeString()
+  logger(dt.blue, message.green)
 }
 
 const bittrexPairs = [
@@ -42,5 +49,6 @@ const bittrexPairs = [
 module.exports = {
   dateTimeString: dateTimeString,
   formatDate: formatDate,
-  bittrexPairs: bittrexPairs
+  bittrexPairs: bittrexPairs,
+  log: log
 }

@@ -1,9 +1,11 @@
 const Strategy = require('../mongoose/Strategy')
+const User = require('../mongoose/User')
 const { body, validationResult } = require('express-validator')
 const { check } = require('express-validator')
 const apiResponse = require('../helpers/apiResponse')
 // const auth = require('../middlewares/jwt')
 const mongoose = require('mongoose')
+const log = require('../helpers/utils').log
 mongoose.set('useFindAndModify', false)
 
 // Strategy Schema
@@ -43,6 +45,20 @@ exports.strategyCreate = [
         alerts: []
       })
 
+      let username = req.body.username
+      User.findOne({ username: username }, (err, user) => {
+        if (err) return
+        if (user !== null) {
+          user.strategies.push(strategy)
+          user.save((err) => {
+            if (!err) {
+              log('New Strategy Created!')
+              return Promise.resolve('New Strategy Created!')
+            }
+          })
+        }
+      })
+
       if (!errors.isEmpty()) {
         return apiResponse.validationErrorWithData(res, 'Validation Error.', errors.array())
       } else {
@@ -60,8 +76,8 @@ exports.strategyCreate = [
   }
 ]
 
-// const notify = require('../utils/notify')
-// const remoteNotifications = require('../utils/remoteNotifications')
+// const notify = require('../utils.js/notify')
+// const remoteNotifications = require('../utils.js/remoteNotifications')
 // const User = require('../mongoose/User')
 // const Strategy = require('../mongoose/Strategy')
 // const Alert = require('../mongoose/Alert')

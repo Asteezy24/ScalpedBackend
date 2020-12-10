@@ -1,5 +1,5 @@
 const ccxt = require('ccxt')
-const utils = require('../utils/utils')
+const utils = require('../helpers/utils')
 const Indicators = require('../indicators/indicators')
 const schedule = require('node-schedule')
 const strategyController = require('./StrategyController')
