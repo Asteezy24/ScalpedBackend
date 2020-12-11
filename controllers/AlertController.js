@@ -27,6 +27,10 @@ function AlertData (data) {
 exports.getAlerts = [
   (req, res) => {
     User.findOne({ username: req.body.username }, (err, user) => {
+      if(err) {
+        console.log(err)
+      }
+      console.log(user.strategies.length)
       if (user.strategies.length > 0) {
         if (err) {
           console.log(err)
