@@ -6,6 +6,7 @@ const mongoose = require('mongoose')
 const log = require('../helpers/utils').log
 const Alert = require('../mongoose/Alert')
 const Strategy = require('../mongoose/Strategy')
+const User = require('../mongoose/User')
 mongoose.set('useFindAndModify', false)
 
 // User Schema
@@ -24,7 +25,28 @@ function AlertData (data) {
  */
 
 exports.getAlerts = [
-  (req, res) => {}
+  (req, res) => {
+    User.findOne({ username: req.body.username }, (err, user) => {
+      if (user.strategies.length > 0) {
+        let alerts = []
+        for (let i = 0; i < user.strategies.length; i++) {
+          Strategy.findOne({ _id: user.strategies[i] }, (err, foundStrat) => {
+            for (let j = 0; j < foundStrat.alerts.length; j++) {
+              let foundAlert = {
+                action: foundStrat.alerts[j].action,
+                underlying: foundStrat.alerts[j].underlying
+              }
+              alerts.push(foundAlert)
+            }
+          }).then(() => {
+            return apiResponse.successResponseWithData(res, 'Operation success', alerts)
+          })
+        }
+      } else {
+        return apiResponse.successResponseWithData(res, 'Operation success', [])
+      }
+    })
+  }
 ]
 
 exports.saveAlerts =
