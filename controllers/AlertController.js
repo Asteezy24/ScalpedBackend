@@ -39,6 +39,7 @@ exports.getAlerts = [
               alerts.push(foundAlert)
             }
           }).then(() => {
+            console.log(alerts)
             return apiResponse.successResponseWithData(res, 'Operation success', alerts)
           })
         }

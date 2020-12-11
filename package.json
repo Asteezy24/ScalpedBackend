@@ -17,6 +17,7 @@
     "@slack/events-api": "^2.3.4",
     "@slack/web-api": "^5.14.0",
     "Router": "^2.1.0",
+    "apn": "^2.2.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "ccxt": "^1.38.20",

@@ -73,7 +73,7 @@ function createDummyUser () {
       })
     } else {
       console.log('user exists already')
-      AlertController.saveAlerts('GMMA', 'Buy', 'AAPL')
+      //AlertController.saveAlerts('GMMA', 'Buy', 'AAPL')
     }
   })
 }
