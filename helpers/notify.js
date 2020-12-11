@@ -69,6 +69,7 @@ function sendSlackMessageMain (exchange, signal, ticker, lastPrice, timeframe) {
 }
 
 function blastToAllChannels (username, instance, signal, symbol, lastPrice, timeframe) {
+  console.log('i should be sending a message...')
   // push notification
   User.findOne({ username: username }, (err, user) => {
     if (err) return
