@@ -28,6 +28,10 @@ exports.getAlerts = [
   (req, res) => {
     User.findOne({ username: req.body.username }, (err, user) => {
       if (user.strategies.length > 0) {
+        if (err) {
+          console.log(err)
+        }
+        console.log(user.strategies.length)
         let alerts = []
         for (let i = 0; i < user.strategies.length; i++) {
           Strategy.findOne({ _id: user.strategies[i] }, (err, foundStrat) => {
