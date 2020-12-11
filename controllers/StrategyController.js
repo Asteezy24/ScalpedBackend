@@ -72,3 +72,38 @@ exports.strategyCreate = [
     }
   }
 ]
+
+/**
+ * Strategy List.
+ *
+ * @returns {Object}
+ */
+exports.strategyGet = [
+  function (req, res) {
+    try {
+      User.findOne({ username: req.body.username }, (err, user) => {
+        if (user.strategies.length > 0) {
+          let strategies = []
+          for (let i = 0; i < user.strategies.length; i++) {
+            Strategy.findOne({ _id: user.strategies[i] }, (err, foundStrat) => {
+              let strategyToPush = {
+                identifier: foundStrat.identifier,
+                strategyName: 'created strat',
+                strategyUnderlying: 'AAPL',
+                action: foundStrat.action
+              }
+              strategies.push(strategyToPush)
+            }).then(() => {
+              return apiResponse.successResponseWithData(res, 'Operation success', strategies)
+            })
+          }
+        } else {
+          return apiResponse.successResponseWithData(res, 'Operation success', [])
+        }
+      })
+    } catch (err) {
+      // throw error in json response with status 500.
+      return apiResponse.ErrorResponse(res, err)
+    }
+  }
+]

@@ -4,6 +4,6 @@ const strategySchema = new mongoose.Schema({
   identifier: { type: String, trim: true, required: false },
   action: { type: String, trim: true, required: false },
   alerts: [{}]
-})
+}, { versionKey: false })
 
 module.exports = mongoose.model('Strategy', strategySchema)

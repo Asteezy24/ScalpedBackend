@@ -6,6 +6,15 @@ exports.successResponse = function (res, msg) {
   return res.status(200).json(data)
 }
 
+exports.successResponseWithData = function (res, msg, data) {
+  const resData = {
+    error: false,
+    message: msg,
+    data: data
+  }
+  return res.status(200).json(resData)
+}
+
 exports.ErrorResponse = function (res, msg) {
   const data = {
     error: true,
@@ -25,8 +34,7 @@ exports.notFoundResponse = function (res, msg) {
 exports.validationError = function (res, msg, data) {
   const resData = {
     error: true,
-    message: msg,
-    data: data
+    message: msg
   }
   return res.status(400).json(resData)
 }
