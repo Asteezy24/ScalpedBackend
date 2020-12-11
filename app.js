@@ -10,6 +10,7 @@ const bodyParser = require('body-parser')
 
 const User = require('./mongoose/User')
 const TickerCollection = require('./data collection/TickerCollection')
+const AlertController = require('../Socky/controllers/AlertController')
 
 // DB connection
 const MONGODB_URL = process.env.MONGODB_URL
@@ -72,10 +73,10 @@ function createDummyUser () {
       })
     } else {
       console.log('user exists already')
+      AlertController.saveAlerts('GMMA', 'Buy', 'AAPL')
     }
   })
 }
-
 
 // start the data collection process
 createDummyUser()

@@ -7,6 +7,7 @@ const bittrexInstance = new (ccxt)['bittrex']({
   enableRateLimit: true
 })
 const notify = require('../helpers/notify')
+const AlertController = require('../controllers/AlertController')
 
 // User Preferences
 let finalMarketTickersAndSymbols = []
@@ -161,6 +162,9 @@ async function scheduledCollection (symbol, instance, timeframe) {
     if (oldDataJson['guppy'] !== newDataJson['guppy']) {
       if (signal !== 'neutral') {
         // app.sendSocketMessage('', '')
+        // alert saving to DB
+        AlertController.saveAlerts('GMMA', signal, symbol)
+        // notifications
         notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
       }
     }
