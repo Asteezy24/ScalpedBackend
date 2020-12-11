@@ -54,8 +54,8 @@ exports.strategyCreate = [
               if (!err) {
                 log('New Strategy Created for User!')
                 strategy.save()
-                let strategyData = new StrategyData(strategy)
-                return apiResponse.successResponseWithData(res, 'Strategy add Success.', strategyData)
+                // let strategyData = new StrategyData(strategy)
+                return apiResponse.successResponse(res, 'Strategy Add Success.')
               } else {
                 return apiResponse.ErrorResponse(res, err)
               }
@@ -64,7 +64,7 @@ exports.strategyCreate = [
         })
       } else {
         // validation error
-        return apiResponse.validationErrorWithData(res, 'Validation Error.', errors.array())
+        return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       }
     } catch (err) {
       // throw error in json response with status 500.

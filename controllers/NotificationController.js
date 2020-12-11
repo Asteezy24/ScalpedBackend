@@ -30,7 +30,7 @@ exports.updateTokenForUser = [
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
-        return apiResponse.validationErrorWithData(res, 'Validation Error.', errors.array())
+        return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       } else {
         User.findOne({ username: req.body.username }, function (err, foundUser) {
           if (err) {
@@ -45,8 +45,8 @@ exports.updateTokenForUser = [
               if (err) {
                 return apiResponse.ErrorResponse(res, err)
               }
-              let userData = new UserData(foundUser)
-              return apiResponse.successResponseWithData(res, 'Updated device token.', userData)
+              // let userData = new UserData(foundUser)
+              return apiResponse.successResponse(res, 'Updated device token.')
             })
           }
         })
