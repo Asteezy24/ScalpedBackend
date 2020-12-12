@@ -26,19 +26,11 @@ function AlertData (data) {
 
 exports.getAlerts = [
   (req, res) => {
-    User.findOne({ username: req.body.username }, (err, user) => {
-      if(err) {
-        console.log(err)
-      }
-      console.log(user.strategies.length)
+    User.findOne({ username: req.body.username }).then((user) => {
       if (user.strategies.length > 0) {
-        if (err) {
-          console.log(err)
-        }
-        console.log(user.strategies.length)
         let alerts = []
         for (let i = 0; i < user.strategies.length; i++) {
-          Strategy.findOne({ _id: user.strategies[i] }, (err, foundStrat) => {
+          Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
             for (let j = 0; j < foundStrat.alerts.length; j++) {
               let foundAlert = {
                 action: foundStrat.alerts[j].action,
@@ -46,8 +38,6 @@ exports.getAlerts = [
               }
               alerts.push(foundAlert)
             }
-          }).then(() => {
-            console.log(alerts)
             return apiResponse.successResponseWithData(res, 'Operation success', alerts)
           })
         }

@@ -81,11 +81,11 @@ exports.strategyCreate = [
 exports.strategyGet = [
   function (req, res) {
     try {
-      User.findOne({ username: req.body.username }, (err, user) => {
+      User.findOne({ username: req.body.username }).then((user) => {
         if (user.strategies.length > 0) {
           let strategies = []
           for (let i = 0; i < user.strategies.length; i++) {
-            Strategy.findOne({ _id: user.strategies[i] }, (err, foundStrat) => {
+            Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
               let strategyToPush = {
                 identifier: foundStrat.identifier,
                 strategyName: 'created strat',
@@ -93,7 +93,6 @@ exports.strategyGet = [
                 action: foundStrat.action
               }
               strategies.push(strategyToPush)
-            }).then(() => {
               return apiResponse.successResponseWithData(res, 'Operation success', strategies)
             })
           }
@@ -101,6 +100,27 @@ exports.strategyGet = [
           return apiResponse.successResponseWithData(res, 'Operation success', [])
         }
       })
+
+      // User.findOne({ username: req.body.username }, (err, user) => {
+      //   if (user.strategies.length > 0) {
+      //     let strategies = []
+      //     for (let i = 0; i < user.strategies.length; i++) {
+      //       Strategy.findOne({ _id: user.strategies[i] }, (err, foundStrat) => {
+      //         let strategyToPush = {
+      //           identifier: foundStrat.identifier,
+      //           strategyName: 'created strat',
+      //           strategyUnderlying: 'AAPL',
+      //           action: foundStrat.action
+      //         }
+      //         strategies.push(strategyToPush)
+      //       }).then(() => {
+      //         return apiResponse.successResponseWithData(res, 'Operation success', strategies)
+      //       })
+      //     }
+      //   } else {
+      //     return apiResponse.successResponseWithData(res, 'Operation success', [])
+      //   }
+      // })
     } catch (err) {
       // throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err)
