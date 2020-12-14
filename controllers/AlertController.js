@@ -62,7 +62,9 @@ exports.saveAlerts =
       if (foundStrategy !== null) {
         foundStrategy.alerts.push(alert)
         foundStrategy.save((err) => {
-          log('error saving alert ' + err)
+          if (err) {
+            log('error saving alert ' + err)
+          }
         })
       }
     })

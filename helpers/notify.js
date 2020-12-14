@@ -9,6 +9,7 @@ const slack = new SlackWebhook(slackWebhookURL, {
 })
 const apn = require('apn')
 const User = require('../mongoose/User')
+const log = require('../helpers/utils').log
 const options = {
   token: {
     key: './AuthKey_WFF52K7URN.p8',
@@ -72,10 +73,14 @@ function blastToAllChannels (username, instance, signal, symbol, lastPrice, time
   console.log('i should be sending a message...')
   // push notification
   User.findOne({ username: username }, (err, user) => {
-    if (err) return
+    if (err) {
+      log(err)
+      return
+    }
     if (user !== null) {
       // push notification
       const note = createNote()
+      console.log(user.deviceToken)
       sendPushNotification(note, user.deviceToken)
     }
   })
