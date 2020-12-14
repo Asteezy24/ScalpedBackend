@@ -32,7 +32,12 @@ function createNote () {
 }
 
 function sendPushNotification (note, token) {
-  apnProvider.send(note, token).then((result) => {})
+  apnProvider.send(note, token).then((response) => {
+    console.log(response.sent)
+    console.log(response.failed)
+    // response.sent: Array of device tokens to which the notification was sent succesfully
+    // response.failed: Array of objects containing the device token (`device`) and either an `error`, or a `status` and `response` from the API
+  })
 }
 
 function sendSlackMessageMain (exchange, signal, ticker, lastPrice, timeframe) {
