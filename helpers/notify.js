@@ -85,7 +85,6 @@ function blastToAllChannels (username, instance, signal, symbol, lastPrice, time
     if (user !== null) {
       // push notification
       const note = createNote()
-      console.log(user.deviceToken)
       sendPushNotification(note, user.deviceToken)
     }
   })
