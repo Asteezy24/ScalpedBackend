@@ -13,6 +13,7 @@ const AlertController = require('../controllers/AlertController')
 let finalMarketTickersAndSymbols = []
 let tickerEndpoints = []
 const technicalModels = []
+const fullListOfSymbols = []
 
 // -----------------------------------------------------------------------------
 
@@ -202,6 +203,7 @@ async function collectData () {
     .then(async () => {
       for (const index in tickerEndpoints) {
         let symbol = tickerEndpoints[index].ticker
+        fullListOfSymbols.push(symbol)
         await getInitialCandlesAndIndicators(symbol, bittrexInstance)
       }
     })
@@ -228,5 +230,6 @@ schedule.scheduleJob('0 18 * * *', async function () {
 
 module.exports = {
   collectData: collectData,
-  bittrexInstance: bittrexInstance
+  bittrexInstance: bittrexInstance,
+  fullListOfSymbols: fullListOfSymbols
 }
