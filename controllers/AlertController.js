@@ -26,21 +26,12 @@ function AlertData (data) {
 
 exports.getAlerts = [
   (req, res) => {
+    let alerts = []
     User.findOne({ username: req.body.username }).then((user) => {
       if (user.strategies.length > 0) {
-        let alerts = []
-        for (let i = 0; i < user.strategies.length; i++) {
-          Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
-            for (let j = 0; j < foundStrat.alerts.length; j++) {
-              let foundAlert = {
-                action: foundStrat.alerts[j].action,
-                underlying: foundStrat.alerts[j].underlying
-              }
-              alerts.push(foundAlert)
-            }
-            return apiResponse.successResponseWithData(res, 'Operation success', alerts)
-          })
-        }
+        buildAlertsArray(user).then(alertsArr => {
+          return apiResponse.successResponseWithData(res, 'Operation success', alertsArr)
+        })
       } else {
         return apiResponse.successResponseWithData(res, 'Operation success', [])
       }
@@ -69,3 +60,19 @@ exports.saveAlerts =
       }
     })
   }
+
+const buildAlertsArray = async (user) => {
+  let alerts = []
+  for (let i = 0; i < user.strategies.length; i++) {
+    await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
+      for (let j = 0; j < foundStrat.alerts.length; j++) {
+        let foundAlert = {
+          action: foundStrat.alerts[j].action,
+          underlying: foundStrat.alerts[j].underlying
+        }
+        alerts.push(foundAlert)
+      }
+    })
+  }
+  return alerts
+}

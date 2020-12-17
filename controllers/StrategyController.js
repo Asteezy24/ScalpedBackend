@@ -25,19 +25,9 @@ exports.strategyGet = [
     try {
       User.findOne({ username: req.body.username }).then((user) => {
         if (user.strategies.length > 0) {
-          let strategies = []
-          for (let i = 0; i < user.strategies.length; i++) {
-            Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
-              let strategyToPush = {
-                underlying: foundStrat.underlying,
-                identifier: foundStrat.identifier,
-                strategyName: 'created strat',
-                action: foundStrat.action
-              }
-              strategies.push(strategyToPush)
-              return apiResponse.successResponseWithData(res, 'Operation success', strategies)
-            })
-          }
+          buildStrategiesArray(user).then(strategiesArr => {
+            return apiResponse.successResponseWithData(res, 'Operation success', strategiesArr)
+          })
         } else {
           return apiResponse.successResponseWithData(res, 'Operation success', [])
         }
@@ -107,3 +97,19 @@ exports.strategyCreate = [
     }
   }
 ]
+
+const buildStrategiesArray = async (user) => {
+  let strategies = []
+  for (let i = 0; i < user.strategies.length; i++) {
+    await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
+      let strategyToPush = {
+        underlying: foundStrat.underlying,
+        identifier: foundStrat.identifier,
+        strategyName: 'created strat',
+        action: foundStrat.action
+      }
+      strategies.push(strategyToPush)
+    })
+  }
+  return strategies
+}
