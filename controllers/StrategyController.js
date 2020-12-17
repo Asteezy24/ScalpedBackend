@@ -16,6 +16,40 @@ function StrategyData (data) {
 }
 
 /**
+ * Strategy List.
+ *
+ * @returns {Object}
+ */
+exports.strategyGet = [
+  function (req, res) {
+    try {
+      User.findOne({ username: req.body.username }).then((user) => {
+        if (user.strategies.length > 0) {
+          let strategies = []
+          for (let i = 0; i < user.strategies.length; i++) {
+            Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
+              let strategyToPush = {
+                underlying: foundStrat.underlying,
+                identifier: foundStrat.identifier,
+                strategyName: 'created strat',
+                action: foundStrat.action
+              }
+              strategies.push(strategyToPush)
+              return apiResponse.successResponseWithData(res, 'Operation success', strategies)
+            })
+          }
+        } else {
+          return apiResponse.successResponseWithData(res, 'Operation success', [])
+        }
+      })
+    } catch (err) {
+      // throw error in json response with status 500.
+      return apiResponse.ErrorResponse(res, err)
+    }
+  }
+]
+
+/**
  * Strategy save.
  *
  * @param {string}      id
@@ -35,11 +69,12 @@ exports.strategyCreate = [
       }
     })
   }),
-  check('*').escape(),
+  check('*'),
   (req, res) => {
     try {
       const errors = validationResult(req)
       const strategy = new Strategy({
+        underlying: req.body.underlying,
         identifier: req.body.identifier,
         action: req.body.action,
         alerts: []
@@ -66,40 +101,6 @@ exports.strategyCreate = [
         // validation error
         return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       }
-    } catch (err) {
-      // throw error in json response with status 500.
-      return apiResponse.ErrorResponse(res, err)
-    }
-  }
-]
-
-/**
- * Strategy List.
- *
- * @returns {Object}
- */
-exports.strategyGet = [
-  function (req, res) {
-    try {
-      User.findOne({ username: req.body.username }).then((user) => {
-        if (user.strategies.length > 0) {
-          let strategies = []
-          for (let i = 0; i < user.strategies.length; i++) {
-            Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
-              let strategyToPush = {
-                identifier: foundStrat.identifier,
-                strategyName: 'created strat',
-                strategyUnderlying: 'AAPL',
-                action: foundStrat.action
-              }
-              strategies.push(strategyToPush)
-              return apiResponse.successResponseWithData(res, 'Operation success', strategies)
-            })
-          }
-        } else {
-          return apiResponse.successResponseWithData(res, 'Operation success', [])
-        }
-      })
     } catch (err) {
       // throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err)

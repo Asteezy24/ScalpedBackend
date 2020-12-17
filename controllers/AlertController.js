@@ -55,7 +55,7 @@ exports.saveAlerts =
       underlying: underlying
     })
 
-    Strategy.findOne({ identifier: strategyIdentifier }, function (err, foundStrategy) {
+    Strategy.findOne({ identifier: strategyIdentifier, underlying: underlying, action: action }, function (err, foundStrategy) {
       if (err) {
         log(err)
       }

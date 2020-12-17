@@ -17,7 +17,6 @@ exports.symbolSearch = [
       if (errors.isEmpty()) {
       		const symbolMatches = TickerCollection.fullListOfSymbols.filter(element => element.includes(symbol.toUpperCase()))
         if (symbolMatches !== undefined) {
-          console.log(symbolMatches)
           return apiResponse.successResponseWithData(res, 'Success!', symbolMatches)
         } else {
           return apiResponse.validationError(res, 'No Matches!')

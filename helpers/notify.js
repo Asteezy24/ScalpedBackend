@@ -33,8 +33,8 @@ function createNote () {
 
 function sendPushNotification (note, token) {
   apnProvider.send(note, token).then((response) => {
-    //console.log(response.sent)
-    //console.log(response.failed)
+    // console.log(response.sent)
+    // console.log(response.failed)
     // response.sent: Array of device tokens to which the notification was sent succesfully
     // response.failed: Array of objects containing the device token (`device`) and either an `error`, or a `status` and `response` from the API
   })
@@ -75,7 +75,6 @@ function sendSlackMessageMain (exchange, signal, ticker, lastPrice, timeframe) {
 }
 
 function blastToAllChannels (username, instance, signal, symbol, lastPrice, timeframe) {
-  console.log('i should be sending a message...')
   // push notification
   User.findOne({ username: username }, (err, user) => {
     if (err) {
