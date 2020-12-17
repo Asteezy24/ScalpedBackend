@@ -63,7 +63,7 @@ exports.strategyCreate = [
   // auth,
   body('action', 'Action must not be empty.').isLength({ min: 1 }).trim(),
   body('identifier', 'Strategy Identifier must not be empty').isLength({ min: 1 }).trim().custom((value, { req }) => {
-    return Strategy.findOne({ identifier: req.body.identifier }).then(strategy => {
+    return Strategy.findOne({ identifier: req.body.identifier, underlying: req.body.underlying, action: req.body.action }).then(strategy => {
       if (strategy) {
         return Promise.reject('Strategy already exists with this ID.')
       }
