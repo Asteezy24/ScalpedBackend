@@ -26,7 +26,6 @@ function AlertData (data) {
 
 exports.getAlerts = [
   (req, res) => {
-    let alerts = []
     User.findOne({ username: req.body.username }).then((user) => {
       if (user.strategies.length > 0) {
         buildAlertsArray(user).then(alertsArr => {
@@ -40,13 +39,13 @@ exports.getAlerts = [
 ]
 
 exports.saveAlerts =
-  (strategyIdentifier, action, underlying) => {
+  (strategyIdentifier, action, underlying, timeframe) => {
     let alert = new Alert({
       action: action,
       underlying: underlying
     })
 
-    Strategy.findOne({ identifier: strategyIdentifier, underlying: underlying, action: action }, function (err, foundStrategy) {
+    Strategy.findOne({ identifier: strategyIdentifier, underlying: underlying, action: action, timeframe: timeframe }, function (err, foundStrategy) {
       if (err) {
         log(err)
       }

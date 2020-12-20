@@ -67,8 +67,10 @@ exports.strategyCreate = [
         underlying: req.body.underlying,
         identifier: req.body.identifier,
         action: req.body.action,
+        timeframe: req.body.timeframe,
         alerts: []
       })
+      console.log(req.body.timeframe)
       let username = req.body.username
       if (errors.isEmpty()) {
         // save to user
@@ -103,9 +105,9 @@ const buildStrategiesArray = async (user) => {
   for (let i = 0; i < user.strategies.length; i++) {
     await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
       let strategyToPush = {
+        timeframe: foundStrat.timeframe,
         underlying: foundStrat.underlying,
         identifier: foundStrat.identifier,
-        strategyName: 'created strat',
         action: foundStrat.action
       }
       strategies.push(strategyToPush)

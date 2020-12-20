@@ -164,7 +164,7 @@ async function scheduledCollection (symbol, instance, timeframe) {
       if (signal !== 'neutral') {
         // app.sendSocketMessage('', '')
         // alert saving to DB
-        AlertController.saveAlerts('GMMA', signal, symbol)
+        AlertController.saveAlerts('GMMA', signal, symbol, timeframe)
         // notifications
         notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
       }
