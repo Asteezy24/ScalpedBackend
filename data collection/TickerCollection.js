@@ -8,6 +8,7 @@ const bittrexInstance = new (ccxt)['bittrex']({
 })
 const notify = require('../helpers/notify')
 const AlertController = require('../controllers/AlertController')
+const Stock = require('../mongoose/Stock')
 
 // User Preferences
 let finalMarketTickersAndSymbols = []
@@ -112,6 +113,30 @@ async function getAllTickers () {
           exchange: finalMarketTickersAndSymbols[exchangeIndex].exchange,
           ticker: symbolForExchange
         }
+
+        let ticker = await bittrexInstance.fetchTicker(symbolForExchange)
+
+        Stock.findOne({ name: symbolForExchange }, (err, stock) => {
+          if (err) return
+          if (stock === null) {
+            const stock = new Stock({
+              name: symbolForExchange,
+              price: ticker.last
+            })
+            stock.save((err) => {
+              if (err) {
+                log('error saving alert ' + err)
+              }
+            })
+          } else {
+            stock.price = ticker.last
+            stock.save((err) => {
+              if (err) {
+                log('error saving stock ' + err)
+              }
+            })
+          }
+        })
         tickerEndpoints.push(item)
       }
     }
@@ -164,7 +189,7 @@ async function scheduledCollection (symbol, instance, timeframe) {
       if (signal !== 'neutral') {
         // app.sendSocketMessage('', '')
         // alert saving to DB
-        AlertController.saveAlerts('GMMA', signal, symbol, timeframe)
+        AlertController.saveAlerts('Multiple Moving Average', signal, symbol, timeframe)
         // notifications
         notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
       }
