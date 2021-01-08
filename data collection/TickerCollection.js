@@ -255,6 +255,5 @@ schedule.scheduleJob('0 18 * * *', async function () {
 
 module.exports = {
   collectData: collectData,
-  bittrexInstance: bittrexInstance,
-  fullListOfSymbols: fullListOfSymbols
+  bittrexInstance: bittrexInstance
 }
