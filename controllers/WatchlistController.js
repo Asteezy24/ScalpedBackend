@@ -54,3 +54,38 @@ exports.addToWatchlist = [
     }
   }
 ]
+
+exports.deleteFromWatchlist = [
+  // auth,
+  body('username', 'Username must not be empty.').isLength({ min: 1 }).trim(),
+  (req, res) => {
+    try {
+      User.findOne({ username: req.body.username }).then((user) => {
+        deleteWatchlistItem(user, req.body.stock).then((user) => {
+          user.save((err) => {
+            if (err) {
+              log('error saving alert ' + err)
+              return apiResponse.ErrorResponse(res, 'Couldnt save mongoose')
+            }
+            return apiResponse.successResponse(res, 'Success!')
+          })
+        })
+      })
+    } catch (err) {
+      // throw error in json response with status 500.
+      return apiResponse.ErrorResponse(res, err)
+    }
+  }
+]
+
+const deleteWatchlistItem = async (user, stockParam) => {
+  user.watchlist.forEach(function (item) {
+    // iterate on something
+    if (item.name === stockParam) {
+      console.log('found ' + stockParam)
+      user.watchlist.remove(item)
+    }
+  })
+
+  return user
+}
