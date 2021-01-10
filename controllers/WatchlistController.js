@@ -1,5 +1,6 @@
 const User = require('../mongoose/User')
 const Stock = require('../mongoose/Stock')
+const WatchlistItem = require('../mongoose/WatchlistItem')
 const { body, validationResult } = require('express-validator')
 const { check } = require('express-validator')
 const apiResponse = require('../helpers/apiResponse')
@@ -31,12 +32,12 @@ exports.addToWatchlist = [
     try {
       User.findOne({ username: req.body.username }).then((user) => {
         Stock.findOne({ name: req.body.stock }).then((stock) => {
-          console.log(req.body.stock)
-          let newStockItem = new Stock({
-            name: req.body.stock,
-            price: stock.price
+          let newWatchlistItem = new WatchlistItem({
+            name: stock.name,
+            price: stock.price,
+            priceWhenAdded: stock.price
           })
-          user.watchlist.push(newStockItem)
+          user.watchlist.push(newWatchlistItem)
           user.save((err) => {
             if (err) {
               log('error saving alert ' + err)
