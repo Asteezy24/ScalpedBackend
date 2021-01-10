@@ -59,6 +59,7 @@ function createDummyUser () {
       const user = new User({
         username: 'alex',
         deviceToken: '0',
+        watchlist: [],
         strategies: []
       })
       user.save((err) => {

@@ -27,7 +27,6 @@ exports.symbolSearch = [
             }
             returnObject.push(symbol)
           })
-
           if (symbolMatches !== undefined) {
             return apiResponse.successResponseWithData(res, 'Success!', returnObject)
           } else {
