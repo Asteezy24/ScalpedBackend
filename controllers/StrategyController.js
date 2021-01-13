@@ -65,15 +65,15 @@ exports.strategyCreate = [
       var strategy
       if (req.body.identifier === 'Yield') {
         strategy = new Strategy({
-          yieldUnderlyings: req.body.yieldUnderlyings,
+          underlyings: req.body.yieldUnderlyings,
+          identifier: req.body.identifier,
           yieldBuyPercent: req.body.yieldBuyPercent,
           yieldSellPercent: req.body.yieldSellPercent,
-          alerts:[]
+          alerts: []
         })
-        console.log(req.body.yieldUnderlyings)
       } else {
         strategy = new Strategy({
-          underlying: req.body.underlying,
+          underlyings: [req.body.underlying],
           identifier: req.body.identifier,
           action: req.body.action,
           timeframe: req.body.timeframe,
@@ -115,13 +115,16 @@ const buildStrategiesArray = async (user) => {
   for (let i = 0; i < user.strategies.length; i++) {
     await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
       let strategyToPush = {
-        timeframe: foundStrat.timeframe,
-        underlying: foundStrat.underlying,
+        timeframe: foundStrat.timeframe === undefined ? '' : foundStrat.timeframe,
+        underlyings: foundStrat.identifier === 'Yield' ? foundStrat.underlyings : [foundStrat.underlyings[0]],
         identifier: foundStrat.identifier,
-        action: foundStrat.action
+        action: foundStrat.action === undefined ? '' : foundStrat.action,
+        yieldBuyPercent: foundStrat.yieldBuyPercent === undefined ? '' : foundStrat.yieldBuyPercent,
+        yieldSellPercent: foundStrat.yieldSellPercent === undefined ? '' : foundStrat.yieldSellPercent
       }
       strategies.push(strategyToPush)
     })
   }
+  console.log(strategies)
   return strategies
 }
