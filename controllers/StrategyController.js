@@ -51,7 +51,6 @@ exports.strategyGet = [
 
 exports.strategyCreate = [
   // auth,
-  body('action', 'Action must not be empty.').isLength({ min: 1 }).trim(),
   body('identifier', 'Strategy Identifier must not be empty').isLength({ min: 1 }).trim().custom((value, { req }) => {
     return Strategy.findOne({ identifier: req.body.identifier, underlying: req.body.underlying, action: req.body.action }).then(strategy => {
       if (strategy) {
@@ -63,14 +62,25 @@ exports.strategyCreate = [
   (req, res) => {
     try {
       const errors = validationResult(req)
-      const strategy = new Strategy({
-        underlying: req.body.underlying,
-        identifier: req.body.identifier,
-        action: req.body.action,
-        timeframe: req.body.timeframe,
-        alerts: []
-      })
-      console.log(req.body.timeframe)
+      var strategy
+      if (req.body.identifier === 'Yield') {
+        strategy = new Strategy({
+          yieldUnderlyings: req.body.yieldUnderlyings,
+          yieldBuyPercent: req.body.yieldBuyPercent,
+          yieldSellPercent: req.body.yieldSellPercent,
+          alerts:[]
+        })
+        console.log(req.body.yieldUnderlyings)
+      } else {
+        strategy = new Strategy({
+          underlying: req.body.underlying,
+          identifier: req.body.identifier,
+          action: req.body.action,
+          timeframe: req.body.timeframe,
+          alerts: []
+        })
+      }
+
       let username = req.body.username
       if (errors.isEmpty()) {
         // save to user
