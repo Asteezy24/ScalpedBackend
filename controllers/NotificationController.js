@@ -2,23 +2,16 @@ const User = require('../mongoose/User')
 const { body, validationResult } = require('express-validator')
 const { check } = require('express-validator')
 const apiResponse = require('../helpers/apiResponse')
+const log = require('../helpers/utils').log
 // const auth = require('../middlewares/jwt')
 const mongoose = require('mongoose')
 mongoose.set('useFindAndModify', false)
-
-// User Schema
-function UserData (data) {
-  this.username = data.username
-  this.deviceToken = data.deviceToken
-  this.strategies = data.strategies
-}
 
 /**
  * User update.
  *
  * @param {string}      username
  * @param {string}      deviceToken
- * @param {Array.<Object>}  strategies
  *
  * @returns {Object}
  */
@@ -30,22 +23,27 @@ exports.updateTokenForUser = [
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
+        // return 400
         return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       } else {
-        User.findOne({ username: req.body.username }, function (err, foundUser) {
+        // find user
+        User.findOne({ username: req.body.username }).then((err, foundUser) => {
           if (err) {
-            console.log(err)
+            log(err)
             return apiResponse.ErrorResponse(res, 'Error on user retrieval')
           }
+          // return 404 user not found
           if (foundUser === null) {
             return apiResponse.notFoundResponse(res, 'User does not exist with this username')
           } else {
+            // save the device token to the found user
             foundUser.deviceToken = req.body.deviceToken
             foundUser.save(function (err) {
               if (err) {
+                // return 500, error on save
                 return apiResponse.ErrorResponse(res, err)
               }
-              // let userData = new UserData(foundUser)
+              // 200 success
               return apiResponse.successResponse(res, 'Updated device token.')
             })
           }

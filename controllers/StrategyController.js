@@ -8,30 +8,51 @@ const mongoose = require('mongoose')
 const log = require('../helpers/utils').log
 mongoose.set('useFindAndModify', false)
 
-// Strategy Schema
-function StrategyData (data) {
-  this.identifier = data.id
-  this.action = data.action
-  this.alerts = data.alerts
-}
-
 /**
  * Strategy List.
+ *
+ * @param {string}      username
  *
  * @returns {Object}
  */
 exports.strategyGet = [
-  function (req, res) {
+  body('username', 'Username must not be empty.').isLength({ min: 1 }).trim(),
+  (req, res) => {
     try {
-      User.findOne({ username: req.body.username }).then((user) => {
-        if (user.strategies.length > 0) {
-          buildStrategiesArray(user).then(strategiesArr => {
-            return apiResponse.successResponseWithData(res, 'Operation success', strategiesArr)
+      const buildStrategiesArray = async (user) => {
+        let strategies = []
+        for (let i = 0; i < user.strategies.length; i++) {
+          await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
+            let strategyToPush = {
+              timeframe: foundStrat.timeframe === undefined ? '' : foundStrat.timeframe,
+              underlyings: foundStrat.identifier === 'Yield' ? foundStrat.underlyings : [foundStrat.underlyings[0]],
+              identifier: foundStrat.identifier,
+              action: foundStrat.action === undefined ? '' : foundStrat.action,
+              yieldBuyPercent: foundStrat.yieldBuyPercent === undefined ? '' : foundStrat.yieldBuyPercent,
+              yieldSellPercent: foundStrat.yieldSellPercent === undefined ? '' : foundStrat.yieldSellPercent
+            }
+            strategies.push(strategyToPush)
           })
-        } else {
-          return apiResponse.successResponseWithData(res, 'Operation success', [])
         }
-      })
+        return strategies
+      }
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        // return 400
+        return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
+      } else {
+        User.findOne({ username: req.body.username }).then((user) => {
+          if (user.strategies.length > 0) {
+            buildStrategiesArray(user).then(strategiesArr => {
+              // return 200 with list of strategies
+              return apiResponse.successResponseWithData(res, 'Operation success', strategiesArr)
+            })
+          } else {
+            // return 200 with empty list
+            return apiResponse.successResponseWithData(res, 'Operation success', [])
+          }
+        })
+      }
     } catch (err) {
       // throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err)
@@ -42,61 +63,74 @@ exports.strategyGet = [
 /**
  * Strategy save.
  *
- * @param {string}      id
+ * Common
+ * @param {string}      identifier
+ * @param {string}      username
+ * Moving Average
+ * @param {Array.string}  underlyings
  * @param {string}      action
- * @param {Array.<Object>}  alerts
+ * @param {string}      timeframe
+ * Yield
+ * @param {Array.string}      yieldUnderlyings
+ * @param {string}      yieldBuyPercent
+ * @param {string}      yieldSellPercent
+ * @param {string}      ifFullWatchlist
  *
  * @returns {Object}
  */
 
 exports.strategyCreate = [
   // auth,
-  body('identifier', 'Strategy Identifier must not be empty').isLength({ min: 1 }).trim().custom((value, { req }) => {
-    return Strategy.findOne({ identifier: req.body.identifier, underlying: req.body.underlying, action: req.body.action }).then(strategy => {
-      if (strategy) {
-        return Promise.reject('Strategy already exists with this ID.')
-      }
-    })
-  }),
+  body('identifier', 'Strategy Identifier must not be empty').isLength({ min: 1 }).trim(),
+  body('username', 'Username must not be empty.').isLength({ min: 1 }).trim(),
   check('*'),
   (req, res) => {
     try {
       const errors = validationResult(req)
-      var strategy
-      if (req.body.identifier === 'Yield') {
-        strategy = new Strategy({
-          underlyings: req.body.yieldUnderlyings,
-          identifier: req.body.identifier,
-          yieldBuyPercent: req.body.yieldBuyPercent,
-          yieldSellPercent: req.body.yieldSellPercent,
-          isFullWatchlist: req.body.isFullWatchlist,
-          alerts: []
-        })
-      } else {
-        strategy = new Strategy({
-          underlyings: [req.body.underlying],
-          identifier: req.body.identifier,
-          action: req.body.action,
-          timeframe: req.body.timeframe,
-          alerts: []
-        })
-      }
-
-      let username = req.body.username
       if (errors.isEmpty()) {
+        const buildStrategy = async () => {
+          if (req.body.identifier === 'Yield') {
+            return new Strategy({
+              underlyings: req.body.yieldUnderlyings,
+              identifier: req.body.identifier,
+              yieldBuyPercent: req.body.yieldBuyPercent,
+              yieldSellPercent: req.body.yieldSellPercent,
+              isFullWatchlist: req.body.isFullWatchlist,
+              alerts: []
+            })
+          } else {
+            return new Strategy({
+              underlyings: [req.body.underlying],
+              identifier: req.body.identifier,
+              action: req.body.action,
+              timeframe: req.body.timeframe,
+              alerts: []
+            })
+          }
+        }
+        let username = req.body.username
         // save to user
-        User.findOne({ username: username }, (err, user) => {
-          if (user !== null && !err && errors.isEmpty()) {
-            user.strategies.push(strategy._id)
-            user.save((err) => {
-              if (!err) {
-                log('New Strategy Created for User!')
-                strategy.save()
-                // let strategyData = new StrategyData(strategy)
-                return apiResponse.successResponse(res, 'Strategy Add Success.')
-              } else {
-                return apiResponse.ErrorResponse(res, err)
+        User.findOne({ username: username }).then(async (user) => {
+          if (user !== null && errors.isEmpty()) {
+            await Strategy.findOne({ identifier: req.body.identifier, underlying: req.body.underlying, action: req.body.action }).then(strategy => {
+              if (strategy) {
+                // return 400 problems with body parameters
+                return apiResponse.validationError(res, 'Strategy already exists with this ID.')
               }
+            })
+            await buildStrategy().then((strategy) => {
+              user.strategies.push(strategy._id)
+              user.save((err) => {
+                if (!err) {
+                  log('New Strategy Created for Username: ' + username)
+                  strategy.save()
+                  // return 200 success
+                  return apiResponse.successResponse(res, 'Strategy Add Success.')
+                } else {
+                  // return 500 error saving strategy
+                  return apiResponse.ErrorResponse(res, err)
+                }
+              })
             })
           }
         })
@@ -110,21 +144,3 @@ exports.strategyCreate = [
     }
   }
 ]
-
-const buildStrategiesArray = async (user) => {
-  let strategies = []
-  for (let i = 0; i < user.strategies.length; i++) {
-    await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
-      let strategyToPush = {
-        timeframe: foundStrat.timeframe === undefined ? '' : foundStrat.timeframe,
-        underlyings: foundStrat.identifier === 'Yield' ? foundStrat.underlyings : [foundStrat.underlyings[0]],
-        identifier: foundStrat.identifier,
-        action: foundStrat.action === undefined ? '' : foundStrat.action,
-        yieldBuyPercent: foundStrat.yieldBuyPercent === undefined ? '' : foundStrat.yieldBuyPercent,
-        yieldSellPercent: foundStrat.yieldSellPercent === undefined ? '' : foundStrat.yieldSellPercent
-      }
-      strategies.push(strategyToPush)
-    })
-  }
-  return strategies
-}
