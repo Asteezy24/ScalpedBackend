@@ -68,7 +68,8 @@ function sendSlackMessageMain (exchange, signal, ticker, lastPrice, timeframe) {
         'short': true
       }
       ],
-      'thumb_url': 'https://raw.githubusercontent.com/cjdowner/cryptocurrency-icons/master/128/color/' + ticker.substring(0, ticker.length - 4).toLowerCase() + '.png',
+      'thumb_url': 'https://raw.githubusercontent.com/cjdowner/cryptocurrency-icons/master/128/color/' + ticker + '.png',
+      // 'thumb_url': 'https://raw.githubusercontent.com/cjdowner/cryptocurrency-icons/master/128/color/' + ticker.substring(0, ticker.length - 4).toLowerCase() + '.png',
       'footer': 'Slack API'
     }]
   })

@@ -125,6 +125,5 @@ const buildStrategiesArray = async (user) => {
       strategies.push(strategyToPush)
     })
   }
-  console.log(strategies)
   return strategies
 }

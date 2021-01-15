@@ -9,6 +9,8 @@ const bittrexInstance = new (ccxt)['bittrex']({
 const notify = require('../helpers/notify')
 const AlertController = require('../controllers/AlertController')
 const Stock = require('../mongoose/Stock')
+const Strategy = require('../mongoose/Strategy')
+const User = require('../mongoose/User')
 
 // User Preferences
 let finalMarketTickersAndSymbols = []
@@ -147,53 +149,8 @@ async function getAllTickers () {
 
 async function scheduledCollection (symbol, instance, timeframe) {
   try {
-    let timeframeIndex = ''
-    if (timeframe === '1h') {
-      timeframeIndex = 'hourly'
-    } else if (timeframe === '1d') {
-      timeframeIndex = 'daily'
-    }
-    let candles = await fetchCandles(instance, symbol, timeframe)
-    let guppyUpdate = { guppy: Indicators.GMMA(candles.arrayOfClosePrices) }
-    const analysisOfData = {
-      exchange: instance,
-      ticker: symbol
-    }
-
-    analysisOfData[timeframeIndex] = guppyUpdate
-
-    // const old
-    const oldData = technicalModels.find(element => element.ticker === symbol)
-    const oldDataJson = oldData[timeframeIndex]
-    const newDataJson = analysisOfData[timeframeIndex]
-    const lastPrice = candles.arrayOfClosePrices[candles.arrayOfClosePrices.length - 1]
-
-    for (const key in newDataJson) {
-      if (key === 'guppy') {
-        if (newDataJson[key] !== oldDataJson[key]) {
-          try {
-            const update = {}
-            update[key] = newDataJson[key]
-            oldData[timeframeIndex] = update
-          } catch (e) {
-            log('error updating the models')
-          }
-        }
-      }
-    }
-
-    const signal = newDataJson['guppy']
-
-    // if we have a new guppy signal
-    if (oldDataJson['guppy'] !== newDataJson['guppy']) {
-      if (signal !== 'neutral') {
-        // app.sendSocketMessage('', '')
-        // alert saving to DB
-        AlertController.saveAlerts('Multiple Moving Average', signal, symbol, timeframe)
-        // notifications
-        notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
-      }
-    }
+    // Guppy
+    // await seeIfGuppyTriggered(symbol, instance, timeframe)
   } catch (e) {
     if (e instanceof ccxt.DDoSProtection) {
       log(instance.id + ' [DDoS Protection] ' + e.message)
@@ -220,6 +177,93 @@ async function scheduledCollection (symbol, instance, timeframe) {
     }
   }
 }
+// -----------------------------------------------------------------------------
+
+async function seeIfYieldTriggered (timeframe) {
+  await Strategy.find({ identifier: 'Yield' }).then((strategies) => {
+    for (let i = 0; i < strategies.length; i++) {
+      let listOfUnderlyings = strategies[i].underlyings
+
+      // determine if using watchlist, or specific underlying
+
+      User.findOne({ username: 'alex' }).then((user) => {
+        return user.watchlist
+      }).then((watchlist) => {
+        for (let j = 0; j < listOfUnderlyings.length; j++) {
+          Stock.findOne({ name: listOfUnderlyings[j] }).then((stock) => {
+            let watchlistItemMatch = watchlist.filter(item => { return item['name'] === listOfUnderlyings[j] })
+            let priceWhenAdded = watchlistItemMatch[0].priceWhenAdded
+            // watchlist
+            let yieldBuyPrice = stock.price - (priceWhenAdded * (strategies[i].yieldBuyPercent / 100))
+
+            if (stock.price < yieldBuyPrice) {
+              // app.sendSocketMessage('', '')
+              // alert saving to DB
+              // AlertController.saveAlerts('Yield', 'Buy', symbol, timeframe)
+              // notifications
+              // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
+            } else {
+              AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
+              // do nothing
+            }
+          })
+        }
+      })
+    }
+  })
+}
+
+// -----------------------------------------------------------------------------
+
+async function seeIfGuppyTriggered (symbol, instance, timeframe) {
+  let timeframeIndex = ''
+  if (timeframe === '1h') {
+    timeframeIndex = 'hourly'
+  } else if (timeframe === '1d') {
+    timeframeIndex = 'daily'
+  }
+  let candles = await fetchCandles(instance, symbol, timeframe)
+  let guppyUpdate = { guppy: Indicators.GMMA(candles.arrayOfClosePrices) }
+  const analysisOfData = {
+    exchange: instance,
+    ticker: symbol
+  }
+
+  analysisOfData[timeframeIndex] = guppyUpdate
+
+  // const old
+  const oldData = technicalModels.find(element => element.ticker === symbol)
+  const oldDataJson = oldData[timeframeIndex]
+  const newDataJson = analysisOfData[timeframeIndex]
+  const lastPrice = candles.arrayOfClosePrices[candles.arrayOfClosePrices.length - 1]
+
+  for (const key in newDataJson) {
+    if (key === 'guppy') {
+      if (newDataJson[key] !== oldDataJson[key]) {
+        try {
+          const update = {}
+          update[key] = newDataJson[key]
+          oldData[timeframeIndex] = update
+        } catch (e) {
+          log('error updating the models')
+        }
+      }
+    }
+  }
+
+  const signal = newDataJson['guppy']
+
+  // if we have a new guppy signal
+  if (oldDataJson['guppy'] !== newDataJson['guppy']) {
+    if (signal !== 'neutral') {
+      // app.sendSocketMessage('', '')
+      // alert saving to DB
+      AlertController.saveAlert('Multiple Moving Average', signal, symbol, timeframe)
+      // notifications
+      notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
+    }
+  }
+}
 
 // -----------------------------------------------------------------------------
 
@@ -237,15 +281,18 @@ async function collectData () {
 
 // -----------------------------------------------------------------------------
 // hourly job
-schedule.scheduleJob('*/21 * * * *', async function () {
+schedule.scheduleJob('*/32 * * * *', async function () {
   for (const index in tickerEndpoints) {
     let symbol = tickerEndpoints[index].ticker
     await scheduledCollection(symbol, bittrexInstance, '1h')
   }
+
+  await seeIfYieldTriggered('', bittrexInstance, '1h')
+
   log('Hourly Ticker Data Collected')
 })
 // daily job
-schedule.scheduleJob('0 18 * * *', async function () {
+schedule.scheduleJob('0 45 * * *', async function () {
   for (const index in tickerEndpoints) {
     let symbol = tickerEndpoints[index].ticker
     await scheduledCollection(symbol, bittrexInstance, '1d')

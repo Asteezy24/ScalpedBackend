@@ -33,31 +33,24 @@ exports.getAlerts = [
   }
 ]
 
-exports.saveAlerts =
+exports.saveAlert =
   (strategyIdentifier, action, underlying, timeframe, exchange) => {
     let alert = new Alert({
       action: action,
       underlying: underlying
     })
 
-    console.log(strategyIdentifier)
-    console.log(underlying)
-    console.log(action)
-    console.log('\n')
+    Strategy.findOne({ identifier: strategyIdentifier, underlyings: underlying }).then((foundStrat) => {
+      // if (err) {
+      //   log(err)
+      // }
 
-    Strategy.findOne({ identifier: strategyIdentifier, underlying: underlying, action: action, timeframe: timeframe }, function (err, foundStrategy) {
-      if (err) {
-        log(err)
-      }
-
-      console.log(foundStrategy)
-
-      if (foundStrategy !== null) {
-        foundStrategy.alerts.push(alert)
+      if (foundStrat !== null) {
+        foundStrat.alerts.push(alert)
 
         notify.blastToAllChannels('alex', exchange, action, underlying, '', timeframe)
 
-        foundStrategy.save((err) => {
+        foundStrat.save((err) => {
           if (err) {
             log('error saving alert ' + err)
           }
