@@ -76,7 +76,7 @@ exports.strategyGet = [
  * @param {string}      yieldSellPercent
  * @param {string}      ifFullWatchlist
  *
- * @returns {Object}
+ * @returns {Null}
  */
 
 exports.strategyCreate = [
