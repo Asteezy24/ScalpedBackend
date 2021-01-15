@@ -10,6 +10,7 @@ const strategySchema = new mongoose.Schema({
   // Common
   identifier: { type: String, trim: true, required: false },
   underlyings: [{}],
+  isFullWatchlist: { type: Boolean, trim: true, required: false },
   alerts: [{}]
 }, { versionKey: false })
 

@@ -150,7 +150,7 @@ async function getAllTickers () {
 async function scheduledCollection (symbol, instance, timeframe) {
   try {
     // Guppy
-    // await seeIfGuppyTriggered(symbol, instance, timeframe)
+    await seeIfGuppyTriggered(symbol, instance, timeframe)
   } catch (e) {
     if (e instanceof ccxt.DDoSProtection) {
       log(instance.id + ' [DDoS Protection] ' + e.message)
@@ -185,15 +185,38 @@ async function seeIfYieldTriggered (timeframe) {
       let listOfUnderlyings = strategies[i].underlyings
 
       // determine if using watchlist, or specific underlying
+      if (strategies[i].isFullWatchlist) {
+        User.findOne({ username: 'alex' }).then((user) => {
+          return user.watchlist
+        }).then((watchlist) => {
+          // for each stock in underlying
+          for (let j = 0; j < listOfUnderlyings.length; j++) {
+            Stock.findOne({ name: listOfUnderlyings[j] }).then((stock) => {
+              let watchlistItemMatch = watchlist.filter(item => { return item['name'] === listOfUnderlyings[j] })
+              let priceWhenAdded = watchlistItemMatch[0].priceWhenAdded
+              let yieldBuyPrice = stock.price - (priceWhenAdded * (strategies[i].yieldBuyPercent / 100))
 
-      User.findOne({ username: 'alex' }).then((user) => {
-        return user.watchlist
-      }).then((watchlist) => {
-        for (let j = 0; j < listOfUnderlyings.length; j++) {
-          Stock.findOne({ name: listOfUnderlyings[j] }).then((stock) => {
-            let watchlistItemMatch = watchlist.filter(item => { return item['name'] === listOfUnderlyings[j] })
+              if (stock.price < yieldBuyPrice) {
+                // app.sendSocketMessage('', '')
+                // alert saving to DB
+                // AlertController.saveAlerts('Yield', 'Buy', symbol, timeframe)
+                // notifications
+                // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
+              } else {
+                AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
+                // do nothing
+              }
+            })
+          }
+        })
+      } else {
+        // single stock in yield strategy
+        User.findOne({ username: 'alex' }).then((user) => {
+          return user.watchlist
+        }).then((watchlist) => {
+          Stock.findOne({ name: listOfUnderlyings[0] }).then((stock) => {
+            let watchlistItemMatch = watchlist.filter(item => { return item['name'] === listOfUnderlyings[0] })
             let priceWhenAdded = watchlistItemMatch[0].priceWhenAdded
-            // watchlist
             let yieldBuyPrice = stock.price - (priceWhenAdded * (strategies[i].yieldBuyPercent / 100))
 
             if (stock.price < yieldBuyPrice) {
@@ -207,8 +230,8 @@ async function seeIfYieldTriggered (timeframe) {
               // do nothing
             }
           })
-        }
-      })
+        })
+      }
     }
   })
 }
@@ -281,14 +304,26 @@ async function collectData () {
 
 // -----------------------------------------------------------------------------
 // hourly job
-schedule.scheduleJob('*/32 * * * *', async function () {
+schedule.scheduleJob('*/2 * * * *', async function () {
   for (const index in tickerEndpoints) {
     let symbol = tickerEndpoints[index].ticker
     await scheduledCollection(symbol, bittrexInstance, '1h')
   }
-
+  // see if we have yield alerts
   await seeIfYieldTriggered('', bittrexInstance, '1h')
-
+  // update current stock prices
+  await Stock.find({}, async (err, stocks) => {
+    if (err) { return }
+    for (let i = 0; i < stocks.length; i++) {
+      let ticker = await bittrexInstance.fetchTicker(stocks[i].name)
+      stocks[i].price = ticker.last
+      stocks[i].save((err) => {
+        if (err) {
+          log('error saving stock ' + err)
+        }
+      })
+    }
+  })
   log('Hourly Ticker Data Collected')
 })
 // daily job

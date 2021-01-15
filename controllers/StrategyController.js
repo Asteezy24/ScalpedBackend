@@ -69,6 +69,7 @@ exports.strategyCreate = [
           identifier: req.body.identifier,
           yieldBuyPercent: req.body.yieldBuyPercent,
           yieldSellPercent: req.body.yieldSellPercent,
+          isFullWatchlist: req.body.isFullWatchlist,
           alerts: []
         })
       } else {
