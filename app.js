@@ -7,10 +7,8 @@ const mongoose = require('mongoose')
 const logger = require('morgan')
 const log = require('./helpers/utils').log
 const bodyParser = require('body-parser')
-
 const User = require('./mongoose/User')
 const TickerCollection = require('./data collection/TickerCollection')
-const AlertController = require('../Socky/controllers/AlertController')
 
 // DB connection
 const MONGODB_URL = process.env.MONGODB_URL
@@ -25,7 +23,6 @@ mongoose.connect(MONGODB_URL, { useNewUrlParser: true }).then(() => {
     console.error('App starting error:', err.message)
     process.exit(1)
   })
-// const db = mongoose.connection
 mongoose.Promise = global.Promise
 
 const app = express()
