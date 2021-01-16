@@ -18,11 +18,13 @@ const technicalModels = []
 
 // -----------------------------------------------------------------------------
 // hourly job
-schedule.scheduleJob('20 * * * *', async function () {
+schedule.scheduleJob('52 * * * *', async function () {
   Stock.find({}).then(async (stocks) => {
-    for (const item in stocks) {
-      let symbol = item.name
-      await scheduledCollection(symbol, bittrexInstance, '1h')
+    for (const index in stocks) {
+      let symbol = stocks[index].name
+      await scheduledCollection(symbol, bittrexInstance, '1h').then(() => {
+        log('Finished analysis of ' + symbol)
+      })
     }
   })
   // see if we have yield alerts
@@ -39,14 +41,15 @@ schedule.scheduleJob('20 * * * *', async function () {
         }
       })
     }
+  }).then(() => {
+    log('Stock Prices updated')
   })
-  log('Hourly Ticker Data Collected')
 })
 // daily job
 schedule.scheduleJob('0 45 * * *', async function () {
   Stock.find({}).then(async (stocks) => {
-    for (const item in stocks) {
-      let symbol = item.name
+    for (const index in stocks) {
+      let symbol = stocks[index].name
       await scheduledCollection(symbol, bittrexInstance, '1d')
     }
   })
@@ -71,16 +74,20 @@ let getAllTickers = new Promise((resolve, reject) => {
       const symbolForExchange = symbolsArr[i]
       if (symbolForExchange.includes('BTC')) {
         let ticker = await bittrexInstance.fetchTicker(symbolForExchange)
-        const stock = new Stock({
-          name: symbolForExchange,
-          price: ticker.last
-        })
-        stock.save((err) => {
-          if (err) {
-            log('error saving new stock ' + err)
+        await Stock.findOne({ name: symbolForExchange }).then((stockFound) => {
+          if (stockFound === null) {
+            const stock = new Stock({
+              name: symbolForExchange,
+              price: ticker.last
+            })
+            stock.save((err) => {
+              if (err) {
+                log('error saving new stock ' + err)
+              }
+            })
           }
+          stockNames.push(symbolForExchange)
         })
-        stockNames.push(symbolForExchange)
       }
     }
     resolve(stockNames)
@@ -92,8 +99,9 @@ async function collectData () {
     for (const index in stockNames) {
       await getInitialCandlesAndIndicators(stockNames[index], bittrexInstance)
     }
+  }).then(() => {
+    log('Initial Ticker Data Collected')
   })
-  log('Initial Ticker Data Collected')
 }
 
 // -----------------------------------------------------------------------------
@@ -190,11 +198,10 @@ async function seeIfYieldTriggered (timeframe) {
 
             if (stock.price < yieldBuyPrice) {
               // alert saving to DB
-              // AlertController.saveAlerts('Yield', 'Buy', symbol, timeframe)
+              AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
               // notifications
               // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
             } else {
-              AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
               // do nothing
             }
           })
