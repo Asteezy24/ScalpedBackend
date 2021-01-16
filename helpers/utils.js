@@ -1,5 +1,6 @@
 let moment = require('moment-timezone')
 const logger = require('ololog').configure({ locate: false })
+// eslint-disable-next-line no-unused-expressions
 require('ansicolor').nice
 
 const formatDate = (epoch) => {

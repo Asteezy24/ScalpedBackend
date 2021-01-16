@@ -12,231 +12,96 @@ const Stock = require('../mongoose/Stock')
 const Strategy = require('../mongoose/Strategy')
 const User = require('../mongoose/User')
 
-// User Preferences
-let finalMarketTickersAndSymbols = []
-let tickerEndpoints = []
+// Local Data Storage
+// keeping track of old guppy values, etc.
 const technicalModels = []
-const fullListOfSymbols = []
 
 // -----------------------------------------------------------------------------
-
-let loadExchange = async function (exchange) {
-  try {
-    await exchange.loadMarkets()
-    let symbolArray = exchange.symbols.filter(symbol => (utils.bittrexPairs.includes(symbol)) && symbol.includes('BTC'))
-    finalMarketTickersAndSymbols.push({
-      exchange: exchange.id,
-      symbolsArray: symbolArray
-    })
-  } catch (e) {
-    if (e instanceof ccxt.DDoSProtection) {
-      log(exchange.id + ' [DDoS Protection] ' + e.message)
-    } else if (e instanceof ccxt.RequestTimeout) {
-      log(exchange.id + ' [Request Timeout] ' + e.message)
-    } else if (e instanceof ccxt.AuthenticationError) {
-      log(exchange.id + ' [Authentication Error] ' + e.message)
-    } else if (e instanceof ccxt.ExchangeNotAvailable) {
-      log(exchange.id + ' [Exchange Not Available] ' + e.message)
-    } else if (e instanceof ccxt.ExchangeError) {
-      log(exchange.id + ' [Exchange Error] ' + e.message)
-    } else if (e instanceof ccxt.NetworkError) {
-      log(exchange.id + ' [Network Error] ' + e.message)
-    } else {
-      throw e
-    }
-  }
-}
-
-// -----------------------------------------------------------------------------
-async function fetchCandles (exchangeInstance, symbol, timeframe) {
-  let arrayOfClosePrices = []
-  let arrayOfOpenPrices = []
-  let arrayOfHighPrices = []
-  let arrayOfLowPrices = []
-  let arrayOfVolume = []
-
-  let ohlcv = await exchangeInstance.fetchOHLCV(symbol, timeframe)
-
-  if (ohlcv === undefined) {
-    log('We got an empty ccxt response')
-    return
-  }
-
-  for (let i = 0; i < ohlcv.length; i++) {
-    arrayOfOpenPrices.push(ohlcv[i][1])
-    arrayOfHighPrices.push(ohlcv[i][2])
-    arrayOfLowPrices.push(ohlcv[i][3])
-    arrayOfClosePrices.push(ohlcv[i][4])
-    arrayOfVolume.push(ohlcv[i][5])
-  }
-  // we want to remove the last item, it is the current forming candle
-  arrayOfHighPrices.splice(-1, 1)
-  arrayOfLowPrices.splice(-1, 1)
-  arrayOfClosePrices.splice(-1, 1)
-  arrayOfOpenPrices.splice(-1, 1)
-
-  return {
-    arrayOfHighPrices: arrayOfHighPrices,
-    arrayOfLowPrices: arrayOfLowPrices,
-    arrayOfClosePrices: arrayOfClosePrices,
-    arrayOfOpenPrices: arrayOfOpenPrices
-  }
-}
-
-// -----------------------------------------------------------------------------
-
-async function getInitialCandlesAndIndicators (symbol, instance) {
-  let hourlyCandles = await fetchCandles(instance, symbol, '1h')
-  let dailyCandles = await fetchCandles(instance, symbol, '1d')
-  const cryptoModel = {
-    exchange: instance.id,
-    ticker: symbol,
-    hourly: {
-      guppy: Indicators.GMMA(hourlyCandles.arrayOfClosePrices)
-    },
-    daily: {
-      guppy: Indicators.GMMA(dailyCandles.arrayOfClosePrices)
-    }
-  }
-  technicalModels.push(cryptoModel)
-}
-
-// -----------------------------------------------------------------------------
-
-async function getAllTickers () {
-  // instantiate all exchanges
-  await loadExchange(bittrexInstance)
-  log('Gathering all trading pairs to be used.')
-  for (const exchangeIndex in finalMarketTickersAndSymbols) {
-    for (let i = 0; i < finalMarketTickersAndSymbols[exchangeIndex].symbolsArray.length; i++) {
-      const symbolForExchange = finalMarketTickersAndSymbols[exchangeIndex].symbolsArray[i]
-      if (symbolForExchange.includes('BTC')) {
-        let item = {
-          exchange: finalMarketTickersAndSymbols[exchangeIndex].exchange,
-          ticker: symbolForExchange
-        }
-
-        let ticker = await bittrexInstance.fetchTicker(symbolForExchange)
-
-        Stock.findOne({ name: symbolForExchange }, (err, stock) => {
-          if (err) return
-          if (stock === null) {
-            const stock = new Stock({
-              name: symbolForExchange,
-              price: ticker.last
-            })
-            stock.save((err) => {
-              if (err) {
-                log('error saving alert ' + err)
-              }
-            })
-          } else {
-            stock.price = ticker.last
-            stock.save((err) => {
-              if (err) {
-                log('error saving stock ' + err)
-              }
-            })
-          }
-        })
-        tickerEndpoints.push(item)
-      }
-    }
-  }
-}
-
-// -----------------------------------------------------------------------------
-
-async function scheduledCollection (symbol, instance, timeframe) {
-  try {
-    // Guppy
-    await seeIfGuppyTriggered(symbol, instance, timeframe)
-  } catch (e) {
-    if (e instanceof ccxt.DDoSProtection) {
-      log(instance.id + ' [DDoS Protection] ' + e.message)
-    } else if (e instanceof ccxt.RequestTimeout) { // this happens a lot
-      log(instance.id + symbol + ' [Request Timeout] ')
-      try {
-        await fetchCandles(instance, symbol, timeframe)
-        log(instance.id + symbol, 'success')
-      } catch (e) {
-        log(instance.id + symbol + ' [Request Timeout] ')
-        await fetchCandles(instance, symbol, timeframe)
-        log(instance.id + symbol + 'success')
-      }
-    } else if (e instanceof ccxt.AuthenticationError) {
-      log(instance.id + ' [Authentication Error] ' + e.message)
-    } else if (e instanceof ccxt.ExchangeNotAvailable) {
-      log(instance.id + ' [Exchange Not Available] ' + e.message)
-    } else if (e instanceof ccxt.ExchangeError) {
-      log(instance.id + ' [Exchange Error] ' + e.message)
-    } else if (e instanceof ccxt.NetworkError) {
-      log(instance.id + ' [Network Error] ' + e.message)
-    } else {
-      log(e)
-    }
-  }
-}
-// -----------------------------------------------------------------------------
-
-async function seeIfYieldTriggered (timeframe) {
-  await Strategy.find({ identifier: 'Yield' }).then((strategies) => {
-    for (let i = 0; i < strategies.length; i++) {
-      let listOfUnderlyings = strategies[i].underlyings
-
-      // determine if using watchlist, or specific underlying
-      if (strategies[i].isFullWatchlist) {
-        User.findOne({ username: 'alex' }).then((user) => {
-          return user.watchlist
-        }).then((watchlist) => {
-          // for each stock in underlying
-          for (let j = 0; j < listOfUnderlyings.length; j++) {
-            Stock.findOne({ name: listOfUnderlyings[j] }).then((stock) => {
-              let watchlistItemMatch = watchlist.filter(item => { return item['name'] === listOfUnderlyings[j] })
-              let priceWhenAdded = watchlistItemMatch[0].priceWhenAdded
-              let yieldBuyPrice = stock.price - (priceWhenAdded * (strategies[i].yieldBuyPercent / 100))
-
-              if (stock.price < yieldBuyPrice) {
-                // app.sendSocketMessage('', '')
-                // alert saving to DB
-                // AlertController.saveAlerts('Yield', 'Buy', symbol, timeframe)
-                // notifications
-                // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
-              } else {
-                AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
-                // do nothing
-              }
-            })
-          }
-        })
-      } else {
-        // single stock in yield strategy
-        User.findOne({ username: 'alex' }).then((user) => {
-          return user.watchlist
-        }).then((watchlist) => {
-          Stock.findOne({ name: listOfUnderlyings[0] }).then((stock) => {
-            let watchlistItemMatch = watchlist.filter(item => { return item['name'] === listOfUnderlyings[0] })
-            let priceWhenAdded = watchlistItemMatch[0].priceWhenAdded
-            let yieldBuyPrice = stock.price - (priceWhenAdded * (strategies[i].yieldBuyPercent / 100))
-
-            if (stock.price < yieldBuyPrice) {
-              // app.sendSocketMessage('', '')
-              // alert saving to DB
-              // AlertController.saveAlerts('Yield', 'Buy', symbol, timeframe)
-              // notifications
-              // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
-            } else {
-              AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
-              // do nothing
-            }
-          })
-        })
-      }
+// hourly job
+schedule.scheduleJob('20 * * * *', async function () {
+  Stock.find({}).then(async (stocks) => {
+    for (const item in stocks) {
+      let symbol = item.name
+      await scheduledCollection(symbol, bittrexInstance, '1h')
     }
   })
+  // see if we have yield alerts
+  await seeIfYieldTriggered('', bittrexInstance, '1h')
+  // update current stock prices
+  await Stock.find({}, async (err, stocks) => {
+    if (err) { return }
+    for (let i = 0; i < stocks.length; i++) {
+      let ticker = await bittrexInstance.fetchTicker(stocks[i].name)
+      stocks[i].price = ticker.last
+      stocks[i].save((err) => {
+        if (err) {
+          log('error saving stock ' + err)
+        }
+      })
+    }
+  })
+  log('Hourly Ticker Data Collected')
+})
+// daily job
+schedule.scheduleJob('0 45 * * *', async function () {
+  Stock.find({}).then(async (stocks) => {
+    for (const item in stocks) {
+      let symbol = item.name
+      await scheduledCollection(symbol, bittrexInstance, '1d')
+    }
+  })
+  log('Daily Ticker Data Collected')
+})
+
+// -----------------------------------------------------------------------------
+// On server startup
+
+let getAllTickers = new Promise((resolve, reject) => {
+  // instantiate all exchanges
+  loadExchange(bittrexInstance).then(async (symbolsArr) => {
+    log('Gathering all trading pairs to be used.')
+    let stockNames = []
+    for (let i = 0; i < symbolsArr.length; i++) {
+      const symbolForExchange = symbolsArr[i]
+      if (symbolForExchange.includes('BTC')) {
+        let ticker = await bittrexInstance.fetchTicker(symbolForExchange)
+        const stock = new Stock({
+          name: symbolForExchange,
+          price: ticker.last
+        })
+        stock.save((err) => {
+          if (err) {
+            log('error saving new stock ' + err)
+          }
+        })
+        stockNames.push(symbolForExchange)
+      }
+    }
+    console.log(stockNames)
+    resolve(stockNames)
+  })
+})
+
+let loadExchange = async function (exchange) {
+  await exchange.loadMarkets()
+  let symbolArray = exchange.symbols.filter(symbol => (utils.bittrexPairs.includes(symbol)) && symbol.includes('BTC'))
+  return symbolArray
+}
+
+async function collectData () {
+  await getAllTickers.then(async (stockNames) => {
+    for (const index in stockNames) {
+      await getInitialCandlesAndIndicators(stockNames[index], bittrexInstance)
+    }
+  })
+  log('Initial Ticker Data Collected')
 }
 
 // -----------------------------------------------------------------------------
+// Scheduled Collection
+async function scheduledCollection (symbol, instance, timeframe) {
+  await seeIfGuppyTriggered(symbol, instance, timeframe)
+}
 
 async function seeIfGuppyTriggered (symbol, instance, timeframe) {
   let timeframeIndex = ''
@@ -277,63 +142,121 @@ async function seeIfGuppyTriggered (symbol, instance, timeframe) {
   const signal = newDataJson['guppy']
 
   // if we have a new guppy signal
-  if (oldDataJson['guppy'] !== newDataJson['guppy']) {
-    if (signal !== 'neutral') {
-      // app.sendSocketMessage('', '')
-      // alert saving to DB
-      AlertController.saveAlert('Multiple Moving Average', signal, symbol, timeframe)
-      // notifications
-      notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
-    }
+  if (oldDataJson['guppy'] !== newDataJson['guppy'] && signal !== 'neutral') {
+    // alert saving to DB
+    AlertController.saveAlert('Multiple Moving Average', signal, symbol, timeframe)
+    // notifications
+    notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
   }
 }
 
-// -----------------------------------------------------------------------------
+async function seeIfYieldTriggered (timeframe) {
+  await Strategy.find({ identifier: 'Yield' }).then((strategies) => {
+    for (let i = 0; i < strategies.length; i++) {
+      let listOfUnderlyings = strategies[i].underlyings
 
-async function collectData () {
-  await getAllTickers()
-    .then(async () => {
-      for (const index in tickerEndpoints) {
-        let symbol = tickerEndpoints[index].ticker
-        fullListOfSymbols.push(symbol)
-        await getInitialCandlesAndIndicators(symbol, bittrexInstance)
+      // determine if using watchlist, or specific underlying
+      if (strategies[i].isFullWatchlist) {
+        User.findOne({ username: 'alex' }).then((user) => {
+          return user.watchlist
+        }).then((watchlist) => {
+          // for each stock in underlying
+          for (let j = 0; j < listOfUnderlyings.length; j++) {
+            Stock.findOne({ name: listOfUnderlyings[j] }).then((stock) => {
+              let watchlistItemMatch = watchlist.filter(item => { return item['name'] === listOfUnderlyings[j] })
+              let priceWhenAdded = watchlistItemMatch[0].priceWhenAdded
+              let yieldBuyPrice = stock.price - (priceWhenAdded * (strategies[i].yieldBuyPercent / 100))
+
+              if (stock.price < yieldBuyPrice) {
+                // alert saving to DB
+                // AlertController.saveAlerts('Yield', 'Buy', symbol, timeframe)
+                // notifications
+                // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
+              } else {
+                AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
+                // do nothing
+              }
+            })
+          }
+        })
+      } else {
+        // single stock in yield strategy
+        User.findOne({ username: 'alex' }).then((user) => {
+          return user.watchlist
+        }).then((watchlist) => {
+          Stock.findOne({ name: listOfUnderlyings[0] }).then((stock) => {
+            let watchlistItemMatch = watchlist.filter(item => { return item['name'] === listOfUnderlyings[0] })
+            let priceWhenAdded = watchlistItemMatch[0].priceWhenAdded
+            let yieldBuyPrice = stock.price - (priceWhenAdded * (strategies[i].yieldBuyPercent / 100))
+
+            if (stock.price < yieldBuyPrice) {
+              // alert saving to DB
+              // AlertController.saveAlerts('Yield', 'Buy', symbol, timeframe)
+              // notifications
+              // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
+            } else {
+              AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
+              // do nothing
+            }
+          })
+        })
       }
-    })
-  log('Initial Ticker Data Collected')
-}
-
-// -----------------------------------------------------------------------------
-// hourly job
-schedule.scheduleJob('*/2 * * * *', async function () {
-  for (const index in tickerEndpoints) {
-    let symbol = tickerEndpoints[index].ticker
-    await scheduledCollection(symbol, bittrexInstance, '1h')
-  }
-  // see if we have yield alerts
-  await seeIfYieldTriggered('', bittrexInstance, '1h')
-  // update current stock prices
-  await Stock.find({}, async (err, stocks) => {
-    if (err) { return }
-    for (let i = 0; i < stocks.length; i++) {
-      let ticker = await bittrexInstance.fetchTicker(stocks[i].name)
-      stocks[i].price = ticker.last
-      stocks[i].save((err) => {
-        if (err) {
-          log('error saving stock ' + err)
-        }
-      })
     }
   })
-  log('Hourly Ticker Data Collected')
-})
-// daily job
-schedule.scheduleJob('0 45 * * *', async function () {
-  for (const index in tickerEndpoints) {
-    let symbol = tickerEndpoints[index].ticker
-    await scheduledCollection(symbol, bittrexInstance, '1d')
+}
+
+// -----------------------------------------------------------------------------
+// Data Fetching utilities
+async function fetchCandles (exchangeInstance, symbol, timeframe) {
+  let arrayOfClosePrices = []
+  let arrayOfOpenPrices = []
+  let arrayOfHighPrices = []
+  let arrayOfLowPrices = []
+  let arrayOfVolume = []
+
+  let ohlcv = await exchangeInstance.fetchOHLCV(symbol, timeframe)
+
+  if (ohlcv === undefined) {
+    log('We got an empty ccxt response')
+    return
   }
-  log('Daily Ticker Data Collected')
-})
+
+  for (let i = 0; i < ohlcv.length; i++) {
+    arrayOfOpenPrices.push(ohlcv[i][1])
+    arrayOfHighPrices.push(ohlcv[i][2])
+    arrayOfLowPrices.push(ohlcv[i][3])
+    arrayOfClosePrices.push(ohlcv[i][4])
+    arrayOfVolume.push(ohlcv[i][5])
+  }
+  // we want to remove the last item, it is the current forming candle
+  arrayOfHighPrices.splice(-1, 1)
+  arrayOfLowPrices.splice(-1, 1)
+  arrayOfClosePrices.splice(-1, 1)
+  arrayOfOpenPrices.splice(-1, 1)
+
+  return {
+    arrayOfHighPrices: arrayOfHighPrices,
+    arrayOfLowPrices: arrayOfLowPrices,
+    arrayOfClosePrices: arrayOfClosePrices,
+    arrayOfOpenPrices: arrayOfOpenPrices
+  }
+}
+
+async function getInitialCandlesAndIndicators (symbol, instance) {
+  let hourlyCandles = await fetchCandles(instance, symbol, '1h')
+  let dailyCandles = await fetchCandles(instance, symbol, '1d')
+  const indicatorDataModel = {
+    exchange: instance.id,
+    ticker: symbol,
+    hourly: {
+      guppy: Indicators.GMMA(hourlyCandles.arrayOfClosePrices)
+    },
+    daily: {
+      guppy: Indicators.GMMA(dailyCandles.arrayOfClosePrices)
+    }
+  }
+  technicalModels.push(indicatorDataModel)
+}
 
 module.exports = {
   collectData: collectData,

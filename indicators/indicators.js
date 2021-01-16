@@ -1,30 +1,30 @@
-const technicalindicators = require('technicalindicators')
+const technicalIndicators = require('technicalindicators')
 const indicatorAnalysis = require('./indicatorAnalysis.js')
 
 function simpleMovingAverage (period, values, lastPrice) {
-  const SMA = technicalindicators.SMA
-  var sma = SMA.calculate({
+  const SMA = technicalIndicators.SMA
+  const sma = SMA.calculate({
     period: period,
     values: values
   })
 
-  var analysis = indicatorAnalysis.movingAverageAnalysis(lastPrice, sma[sma.length - 1])
+  const analysis = indicatorAnalysis.movingAverageAnalysis(lastPrice, sma[sma.length - 1])
   return analysis
 }
 
 function exponentialMovingAverage (period, values, lastPrice) {
-  const EMA = technicalindicators.EMA
+  const EMA = technicalIndicators.EMA
   var ema = EMA.calculate({
     period: period,
     values: values
   })
 
-  var analysis = indicatorAnalysis.movingAverageAnalysis(lastPrice, ema[ema.length - 1])
+  const analysis = indicatorAnalysis.movingAverageAnalysis(lastPrice, ema[ema.length - 1])
   return analysis
 }
 
 function emaForGuppy (period, values) {
-  const EMA = technicalindicators.EMA
+  const EMA = technicalIndicators.EMA
   const ema = EMA.calculate({
     period: period,
     values: values
@@ -43,10 +43,9 @@ function GMMA (arrayOfClosePrices) {
 }
 
 function isBuyEntrySignal (lastPrice, arrayOfHighPrices) {
-  const max_of_array = Math.max(...arrayOfHighPrices) // high from the last 20 periods
+  const maxOfArray = Math.max(...arrayOfHighPrices) // high from the last 20 periods
 
-  if (lastPrice > max_of_array) {
-    console.log('!!!!!!!!!!!!!!!!!!!!!!!!')
+  if (lastPrice > maxOfArray) {
     return true
   } else {
     return false
@@ -54,9 +53,9 @@ function isBuyEntrySignal (lastPrice, arrayOfHighPrices) {
 }
 
 function isBuyExitSignal (lastPrice, arrayOfLowPrices) {
-  var min_of_array = Math.min.apply(Math, arrayOfLowPrices)
+  var minOfArray = Math.min.apply(Math, arrayOfLowPrices)
 
-  if (lastPrice < min_of_array) {
+  if (lastPrice < minOfArray) {
     return true
   } else {
     return false
@@ -64,9 +63,9 @@ function isBuyExitSignal (lastPrice, arrayOfLowPrices) {
 }
 
 function isSellEntrySignal (lastPrice, arrayOfLowPrices) {
-  var min_of_array = Math.min.apply(Math, arrayOfLowPrices)
+  var minOfArray = Math.min.apply(Math, arrayOfLowPrices)
 
-  if (lastPrice < min_of_array) {
+  if (lastPrice < minOfArray) {
     return true
   } else {
     return false
@@ -74,8 +73,8 @@ function isSellEntrySignal (lastPrice, arrayOfLowPrices) {
 }
 
 function isSellExitSignal (lastPrice, arrayOfHighPrices) {
-  var max_of_array = Math.max.apply(Math, arrayOfHighPrices)
-  if (lastPrice > max_of_array) {
+  var maxOfArray = Math.max.apply(Math, arrayOfHighPrices)
+  if (lastPrice > maxOfArray) {
     return true
   } else {
     return false
