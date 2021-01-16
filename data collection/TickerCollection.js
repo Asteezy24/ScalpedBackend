@@ -56,6 +56,12 @@ schedule.scheduleJob('0 45 * * *', async function () {
 // -----------------------------------------------------------------------------
 // On server startup
 
+let loadExchange = async function (exchange) {
+  await exchange.loadMarkets()
+  let symbolArray = exchange.symbols.filter(symbol => (utils.bittrexPairs.includes(symbol)) && symbol.includes('BTC'))
+  return symbolArray
+}
+
 let getAllTickers = new Promise((resolve, reject) => {
   // instantiate all exchanges
   loadExchange(bittrexInstance).then(async (symbolsArr) => {
@@ -77,16 +83,9 @@ let getAllTickers = new Promise((resolve, reject) => {
         stockNames.push(symbolForExchange)
       }
     }
-    console.log(stockNames)
     resolve(stockNames)
   })
 })
-
-let loadExchange = async function (exchange) {
-  await exchange.loadMarkets()
-  let symbolArray = exchange.symbols.filter(symbol => (utils.bittrexPairs.includes(symbol)) && symbol.includes('BTC'))
-  return symbolArray
-}
 
 async function collectData () {
   await getAllTickers.then(async (stockNames) => {

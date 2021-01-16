@@ -28,10 +28,8 @@ exports.symbolSearch = [
           if (err) return
           const symbolMatches = stocks.filter(element => element.name.includes(symbol.toUpperCase()))
           const returnObject = []
-
           symbolMatches.forEach((item) => {
-            let symbol = { name: item.name }
-            returnObject.push(symbol)
+            returnObject.push(item.name)
           })
           if (symbolMatches !== undefined) {
             // 200 success
