@@ -18,7 +18,7 @@ const technicalModels = []
 
 // -----------------------------------------------------------------------------
 // hourly job
-schedule.scheduleJob('52 * * * *', async function () {
+schedule.scheduleJob('55 * * * *', async function () {
   Stock.find({}).then(async (stocks) => {
     for (const index in stocks) {
       let symbol = stocks[index].name
@@ -151,7 +151,8 @@ async function seeIfGuppyTriggered (symbol, instance, timeframe) {
   // if we have a new guppy signal
   if (oldDataJson['guppy'] !== newDataJson['guppy'] && signal !== 'neutral') {
     // alert saving to DB
-    AlertController.saveAlert('Multiple Moving Average', signal, symbol, timeframe)
+    AlertController.saveMovingAverageAlert('Moving Average', signal, symbol, timeframe)
+
     // notifications
     notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
   }
@@ -179,9 +180,6 @@ async function seeIfYieldTriggered (timeframe) {
                 // AlertController.saveAlerts('Yield', 'Buy', symbol, timeframe)
                 // notifications
                 // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
-              } else {
-                AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
-                // do nothing
               }
             })
           }

@@ -108,30 +108,46 @@ exports.strategyCreate = [
             })
           }
         }
+        const returnStrategyAfterBuild = async (user) => {
+          await buildStrategy().then((strategy) => {
+            user.strategies.push(strategy._id)
+            user.save((err) => {
+              if (!err) {
+                log('New Strategy Created for Username: ' + username)
+                strategy.save()
+                // return 200 success
+                return apiResponse.successResponse(res, 'Strategy Add Success.')
+              } else {
+                // return 500 error saving strategy
+                return apiResponse.ErrorResponse(res, err)
+              }
+            })
+          })
+        }
         let username = req.body.username
         // save to user
         User.findOne({ username: username }).then(async (user) => {
           if (user !== null && errors.isEmpty()) {
-            await Strategy.findOne({ identifier: req.body.identifier, underlying: req.body.underlying, action: req.body.action }).then(strategy => {
-              if (strategy) {
-                // return 400 problems with body parameters
-                return apiResponse.validationError(res, 'Strategy already exists with this ID.')
-              }
-            })
-            await buildStrategy().then((strategy) => {
-              user.strategies.push(strategy._id)
-              user.save((err) => {
-                if (!err) {
-                  log('New Strategy Created for Username: ' + username)
-                  strategy.save()
-                  // return 200 success
-                  return apiResponse.successResponse(res, 'Strategy Add Success.')
+            // search for moving average
+            if (req.body.identifier === 'Moving Average') {
+              await Strategy.findOne({ underlyings: req.body.underlying, action: req.body.action, timeframe: req.body.timeframe }).then(async strategy => {
+                if (strategy) {
+                  // return 400 problems with body parameters
+                  return apiResponse.validationError(res, 'Strategy already exists with this ID.')
                 } else {
-                  // return 500 error saving strategy
-                  return apiResponse.ErrorResponse(res, err)
+                  await returnStrategyAfterBuild(user)
                 }
               })
-            })
+            } else {
+              await Strategy.findOne({ identifier: req.body.identifier, underlyings: req.body.underlying, yieldBuyPercent: req.body.yieldBuyPercent, yieldSellPercent: req.body.yieldSellPercent }).then(async strategy => {
+                if (strategy) {
+                  // return 400 problems with body parameters
+                  return apiResponse.validationError(res, 'Strategy already exists with this ID.')
+                } else {
+                  await returnStrategyAfterBuild(user)
+                }
+              })
+            }
           }
         })
       } else {

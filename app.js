@@ -15,8 +15,8 @@ const MONGODB_URL = process.env.MONGODB_URL
 mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
   // don't show the log when it is test
   if (process.env.NODE_ENV !== 'test') {
-    log('Connected to ' + MONGODB_URL)
-    log('App is running ... \n')
+    log('Connected to MongoDB instance')
+    log('App is running ...')
   }
 })
   .catch(err => {

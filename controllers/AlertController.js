@@ -60,22 +60,24 @@ exports.getAlerts = [
   }
 ]
 
-exports.saveAlert = async (strategyIdentifier, action, underlying, timeframe, exchange) => {
+exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, timeframe, exchange) => {
   let alert = new Alert({
     action: action,
     underlying: underlying
   })
 
-  await Strategy.findOne({ identifier: strategyIdentifier, underlyings: underlying }).then((err, foundStrat) => {
-    if (err) { log(err) }
-    if (foundStrat !== null) {
+  console.log('Trying to save alert for ' + underlying)
+
+  await Strategy.findOne({ identifier: strategyIdentifier, action: action, timeframe: timeframe, underlyings: underlying }).then(async (foundStrat) => {
+    if (foundStrat !== undefined) {
       foundStrat.alerts.push(alert)
       // notify.blastToAllChannels('alex', exchange, action, underlying, '', timeframe)
-      foundStrat.save((err) => {
+      await foundStrat.save((err) => {
         if (err) {
           log('error saving alert ' + err)
         }
       })
+      log('Saved alert!')
     }
   })
 }
