@@ -49,34 +49,8 @@ app.use((err, req, res) => {
 
 app.use(express.static(path.join(__dirname, 'public')))
 
-function createDummyUser () {
-  User.findOne({ username: 'alex' }, (err, user) => {
-    if (err) return
-    if (user === null) {
-      const user = new User({
-        username: 'alex',
-        deviceToken: '0',
-        watchlist: [],
-        strategies: []
-      })
-      user.save((err) => {
-        if (err) {
           if (err.name === 'MongoError' && err.code === 11000) {
-            console.log('User already registered')
-          }
-          console.log(err.message)
-          return
-        }
-        console.log('New user created!')
-      })
-    } else {
-      console.log('user exists already')
-    }
-  })
-}
-
 // start the data collection process
-createDummyUser()
 TickerCollection.collectData()
 
 module.exports = app
