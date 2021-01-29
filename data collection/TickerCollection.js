@@ -18,7 +18,7 @@ const technicalModels = []
 
 // -----------------------------------------------------------------------------
 // hourly job
-schedule.scheduleJob('55 * * * *', async function () {
+schedule.scheduleJob('37 * * * *', async function () {
   Stock.find({}).then(async (stocks) => {
     for (const index in stocks) {
       let symbol = stocks[index].name
@@ -28,7 +28,7 @@ schedule.scheduleJob('55 * * * *', async function () {
     }
   })
   // see if we have yield alerts
-  await seeIfYieldTriggered('', bittrexInstance, '1h')
+  await seeIfYieldTriggered()
   // update current stock prices
   await Stock.find({}, async (err, stocks) => {
     if (err) { return }
@@ -158,7 +158,7 @@ async function seeIfGuppyTriggered (symbol, instance, timeframe) {
   }
 }
 
-async function seeIfYieldTriggered (timeframe) {
+async function seeIfYieldTriggered () {
   await Strategy.find({ identifier: 'Yield' }).then((strategies) => {
     for (let i = 0; i < strategies.length; i++) {
       let listOfUnderlyings = strategies[i].underlyings
@@ -177,7 +177,7 @@ async function seeIfYieldTriggered (timeframe) {
 
               if (stock.price < yieldBuyPrice) {
                 // alert saving to DB
-                // AlertController.saveAlerts('Yield', 'Buy', symbol, timeframe)
+                AlertController.saveYieldAlert('Yield', 'Buy', stock.name)
                 // notifications
                 // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
               }
@@ -185,24 +185,16 @@ async function seeIfYieldTriggered (timeframe) {
           }
         })
       } else {
-        // single stock in yield strategy
-        User.findOne({ username: 'alex' }).then((user) => {
-          return user.watchlist
-        }).then((watchlist) => {
-          Stock.findOne({ name: listOfUnderlyings[0] }).then((stock) => {
-            let watchlistItemMatch = watchlist.filter(item => { return item['name'] === listOfUnderlyings[0] })
-            let priceWhenAdded = watchlistItemMatch[0].priceWhenAdded
-            let yieldBuyPrice = stock.price - (priceWhenAdded * (strategies[i].yieldBuyPercent / 100))
+        Stock.findOne({ name: strategies[i].underlyings[0] }).then((stock) => {
+          let priceWhenAdded = strategies[i].priceWhenAdded
+          let yieldBuyPrice = stock.price - (priceWhenAdded * (strategies[i].yieldBuyPercent / 100))
 
-            if (stock.price < yieldBuyPrice) {
-              // alert saving to DB
-              AlertController.saveAlert('Yield', 'Buy', listOfUnderlyings, timeframe, bittrexInstance)
-              // notifications
-              // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
-            } else {
-              // do nothing
-            }
-          })
+          if (stock.price < yieldBuyPrice) {
+            // alert saving to DB
+            AlertController.saveYieldAlert('Yield', 'Buy', stock.name)
+            // notifications
+            // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
+          }
         })
       }
     }

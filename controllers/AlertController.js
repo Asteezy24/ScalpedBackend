@@ -60,16 +60,39 @@ exports.getAlerts = [
   }
 ]
 
+exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
+  let alert = new Alert({
+    action: action,
+    underlying: underlying
+  })
+
+  log('Trying to save yield alert for ' + underlying)
+
+  await Strategy.findOne({ identifier: strategyIdentifier, underlyings: underlying }).then(async (foundStrat) => {
+    if (foundStrat !== null) {
+      foundStrat.alerts.push(alert)
+      // notify.blastToAllChannels('alex', exchange, action, underlying, '', timeframe)
+      await foundStrat.save((err) => {
+        if (err) {
+          log('error saving alert ' + err)
+        }
+      })
+      log('Saved alert!')
+    }
+  })
+
+}
+
 exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, timeframe, exchange) => {
   let alert = new Alert({
     action: action,
     underlying: underlying
   })
 
-  console.log('Trying to save alert for ' + underlying)
+  log('Trying to save guppy alert for ' + underlying)
 
   await Strategy.findOne({ identifier: strategyIdentifier, action: action, timeframe: timeframe, underlyings: underlying }).then(async (foundStrat) => {
-    if (foundStrat !== undefined) {
+    if (foundStrat !== null) {
       foundStrat.alerts.push(alert)
       // notify.blastToAllChannels('alex', exchange, action, underlying, '', timeframe)
       await foundStrat.save((err) => {

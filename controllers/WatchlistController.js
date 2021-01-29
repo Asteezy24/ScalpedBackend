@@ -78,7 +78,8 @@ exports.addToWatchlist = [
               priceWhenAdded: stock.price
             })
             user.watchlist.push(newWatchlistItem)
-          }).then(async () => {
+            return stock
+          }).then(async (stock) => {
             // for the user's strategies, if they have a yield strategy, and its a
             // full watchlist strategy, we should update the strategy accordingly.
             for (let i = 0; i < user.strategies.length; i++) {
@@ -88,9 +89,9 @@ exports.addToWatchlist = [
                   foundStrat.save((err) => {
                     if (err) {
                       log('error saving to watchlist ' + err)
-                      return apiResponse.ErrorResponse(res, 'Couldnt save mongoose')
+                      //return apiResponse.ErrorResponse(res, 'Couldnt save mongoose')
                     }
-                    return apiResponse.successResponse(res, 'Success!')
+                    //return apiResponse.successResponse(res, 'Success!')
                   })
                 }
               })

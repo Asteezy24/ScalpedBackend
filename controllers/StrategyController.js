@@ -1,5 +1,6 @@
 const Strategy = require('../mongoose/Strategy')
 const User = require('../mongoose/User')
+const Stock = require('../mongoose/Stock')
 const { body, validationResult } = require('express-validator')
 const { check } = require('express-validator')
 const apiResponse = require('../helpers/apiResponse')
@@ -29,7 +30,8 @@ exports.strategyGet = [
               identifier: foundStrat.identifier,
               action: foundStrat.action === undefined ? '' : foundStrat.action,
               yieldBuyPercent: foundStrat.yieldBuyPercent === undefined ? '' : foundStrat.yieldBuyPercent,
-              yieldSellPercent: foundStrat.yieldSellPercent === undefined ? '' : foundStrat.yieldSellPercent
+              yieldSellPercent: foundStrat.yieldSellPercent === undefined ? '' : foundStrat.yieldSellPercent,
+              priceWhenAdded: foundStrat.priceWhenAdded === undefined ? '' : foundStrat.priceWhenAdded
             }
             strategies.push(strategyToPush)
           })
@@ -90,12 +92,20 @@ exports.strategyCreate = [
       if (errors.isEmpty()) {
         const buildStrategy = async () => {
           if (req.body.identifier === 'Yield') {
+            let price
+            if (!req.body.isFullWatchlist) {
+              await Stock.findOne({ name: req.body.yieldUnderlyings[0] }).then((foundStock) => {
+                price = foundStock.price
+              })
+            }
+
             return new Strategy({
               underlyings: req.body.yieldUnderlyings,
               identifier: req.body.identifier,
               yieldBuyPercent: req.body.yieldBuyPercent,
               yieldSellPercent: req.body.yieldSellPercent,
               isFullWatchlist: req.body.isFullWatchlist,
+              priceWhenAdded: req.body.isFullWatchlist ? null : price,
               alerts: []
             })
           } else {

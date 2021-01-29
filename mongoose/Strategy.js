@@ -7,6 +7,7 @@ const strategySchema = new mongoose.Schema({
   // Yield
   yieldBuyPercent: { type: String, trim: true, required: false },
   yieldSellPercent: { type: String, trim: true, required: false },
+  priceWhenAdded: { type: String, trim: true, required: false },
   // Common
   identifier: { type: String, trim: true, required: false },
   underlyings: [{}],
