@@ -35,6 +35,7 @@ exports.getAlerts = [
               await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
                 for (let j = 0; j < foundStrat.alerts.length; j++) {
                   let foundAlert = {
+                    typeOfAlert: foundStrat.alerts[j].typeOfAlert,
                     action: foundStrat.alerts[j].action,
                     underlying: foundStrat.alerts[j].underlying
                   }
@@ -62,6 +63,7 @@ exports.getAlerts = [
 
 exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
   let alert = new Alert({
+    typeOfAlert: strategyIdentifier,
     action: action,
     underlying: underlying
   })
@@ -85,6 +87,7 @@ exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
 
 exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, timeframe, exchange) => {
   let alert = new Alert({
+    typeOfAlert: strategyIdentifier,
     action: action,
     underlying: underlying
   })
