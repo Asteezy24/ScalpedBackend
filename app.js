@@ -49,7 +49,6 @@ app.use((err, req, res) => {
 
 app.use(express.static(path.join(__dirname, 'public')))
 
-          if (err.name === 'MongoError' && err.code === 11000) {
 // start the data collection process
 TickerCollection.collectData()
 
