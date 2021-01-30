@@ -36,7 +36,7 @@ exports.createNewUser = [
         // validation error 400
         return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       } else {
-        AccessCode.find({ name: req.body.accessCode }).then((code) => {
+        AccessCode.deleteOne({ name: req.body.accessCode }).then((code) => {
           if (code.length < 1) {
             return apiResponse.ErrorResponse(res, 'Invalid Access Code!')
           } else {
