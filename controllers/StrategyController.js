@@ -44,14 +44,18 @@ exports.strategyGet = [
         return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       } else {
         User.findOne({ username: req.body.username }).then((user) => {
-          if (user.strategies.length > 0) {
-            buildStrategiesArray(user).then(strategiesArr => {
-              // return 200 with list of strategies
-              return apiResponse.successResponseWithData(res, 'Operation success', strategiesArr)
-            })
+          if (user === null) {
+            return apiResponse.ErrorResponse(res, 'Cannot find user.')
           } else {
-            // return 200 with empty list
-            return apiResponse.successResponseWithData(res, 'Operation success', [])
+            if (user.strategies.length > 0) {
+              buildStrategiesArray(user).then(strategiesArr => {
+                // return 200 with list of strategies
+                return apiResponse.successResponseWithData(res, 'Operation success', strategiesArr)
+              })
+            } else {
+              // return 200 with empty list
+              return apiResponse.successResponseWithData(res, 'Operation success', [])
+            }
           }
         })
       }

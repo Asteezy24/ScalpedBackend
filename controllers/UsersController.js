@@ -82,7 +82,7 @@ exports.signIn = [
               return apiResponse.ErrorResponse(res, err)
             }
             if (!isMatch) {
-              return apiResponse.notFoundResponse((res, 'Invalid Username/Password'))
+              return apiResponse.notFoundResponse(res, 'Invalid Username/Password')
             }
             // const token = auth.createJwtToken(user)
             return apiResponse.successResponse(res, 'Success!')

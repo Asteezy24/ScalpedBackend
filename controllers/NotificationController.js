@@ -27,11 +27,7 @@ exports.updateTokenForUser = [
         return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       } else {
         // find user
-        User.findOne({ username: req.body.username }).then((err, foundUser) => {
-          if (err) {
-            log(err)
-            return apiResponse.ErrorResponse(res, 'Error on user retrieval')
-          }
+        User.findOne({ username: req.body.username }).then((foundUser) => {
           // return 404 user not found
           if (foundUser === null) {
             return apiResponse.notFoundResponse(res, 'User does not exist with this username')

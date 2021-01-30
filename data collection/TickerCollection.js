@@ -165,7 +165,7 @@ async function seeIfYieldTriggered () {
 
       // determine if using watchlist, or specific underlying
       if (strategies[i].isFullWatchlist) {
-        User.findOne({ username: 'alex' }).then((user) => {
+        User.findOne({ username: 'Alex' }).then((user) => {
           return user.watchlist
         }).then((watchlist) => {
           // for each stock in underlying
