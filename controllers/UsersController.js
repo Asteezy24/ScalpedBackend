@@ -27,14 +27,15 @@ exports.createNewUser = [
         }
       })
     }),
-  body('password', 'Password Cannot be empty').isLength({ min: 8 }).trim(),
+  body('username', 'Username cannot be empty').isLength({ min: 1 }).trim(),
+  body('password', 'Password must be at least 8 characters').isLength({ min: 8 }).trim(),
   check('*'),
   (req, res) => {
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
         // validation error 400
-        return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
+        return apiResponse.validationError(res, errors.array()[0].msg)
       } else {
         AccessCode.deleteOne({ name: req.body.accessCode }).then((code) => {
           if (code.length < 1) {
@@ -66,15 +67,15 @@ exports.createNewUser = [
 
 exports.signIn = [
   // auth,
-  body('username', 'Username Cannot be empty').isLength({ min: 1 }).trim(),
-  body('password', 'Password Cannot be empty').isLength({ min: 1 }).trim(),
+  body('username', 'Username cannot be empty').isLength({ min: 1 }).trim(),
+  body('password', 'Password cannot be empty').isLength({ min: 1 }).trim(),
   check('*'),
   (req, res) => {
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
         // validation error 400
-        return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
+        return apiResponse.validationError(res, errors.array()[0].msg)
       } else {
         User.findOne({ username: req.body.username }, (err, user) => {
           if (err) {
