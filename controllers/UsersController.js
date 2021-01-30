@@ -1,4 +1,5 @@
 const User = require('../mongoose/User')
+const AccessCode = require('../mongoose/AccessCodes')
 const { body, validationResult } = require('express-validator')
 const { check } = require('express-validator')
 const apiResponse = require('../helpers/apiResponse')
@@ -35,19 +36,25 @@ exports.createNewUser = [
         // validation error 400
         return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       } else {
-        const user = new User({
-          username: req.body.username,
-          deviceToken: '0',
-          password: req.body.password,
-          watchlist: [],
-          strategies: []
-        })
-        user.save((err) => {
-          if (err) {
-            log('error saving user ' + err)
-            return apiResponse.ErrorResponse(res, 'Couldnt save mongoose')
+        AccessCode.find({ name: req.body.accessCode }).then((code) => {
+          if (code.length < 1) {
+            return apiResponse.ErrorResponse(res, 'Invalid Access Code!')
+          } else {
+            const user = new User({
+              username: req.body.username,
+              deviceToken: '0',
+              password: req.body.password,
+              watchlist: [],
+              strategies: []
+            })
+            user.save((err) => {
+              if (err) {
+                log('error saving user ' + err)
+                return apiResponse.ErrorResponse(res, 'Couldnt save mongoose')
+              }
+              return apiResponse.successResponse(res, 'Success!')
+            })
           }
-          return apiResponse.successResponse(res, 'Success!')
         })
       }
     } catch (err) {
