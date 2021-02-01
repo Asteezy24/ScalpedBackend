@@ -65,7 +65,8 @@ exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
   let alert = new Alert({
     typeOfAlert: strategyIdentifier,
     action: action,
-    underlying: underlying
+    underlying: underlying,
+    actedUpon: false
   })
 
   log('Trying to save yield alert for ' + underlying)
@@ -82,14 +83,14 @@ exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
       log('Saved alert!')
     }
   })
-
 }
 
 exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, timeframe, exchange) => {
   let alert = new Alert({
     typeOfAlert: strategyIdentifier,
     action: action,
-    underlying: underlying
+    underlying: underlying,
+    actedUpon: false
   })
 
   log('Trying to save guppy alert for ' + underlying)
