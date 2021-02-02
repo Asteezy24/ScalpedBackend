@@ -7,7 +7,8 @@ const mongoose = require('mongoose')
 const logger = require('morgan')
 const log = require('./helpers/utils').log
 const bodyParser = require('body-parser')
-const User = require('./mongoose/User')
+const Strategy = require('./mongoose/Strategy')
+const Alert = require('./mongoose/Alert')
 const TickerCollection = require('./data collection/TickerCollection')
 
 // DB connection
@@ -51,5 +52,19 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // start the data collection process
 TickerCollection.collectData()
+//
+// for (let i = 0; i < 99; i++) {
+//   Strategy.findOne({ action: 'Sell', timeframe: '1H' }).then((strat) => {
+//     let alert = new Alert({
+//       typeOfAlert: 'Moving Average',
+//       action: 'Buy',
+//       underlying: strat.underlyings[0],
+//       actedUpon: false
+//     })
+//     strat.alerts.push(alert)
+//     strat.save()
+//   })
+//   console.log('saved')
+// }
 
 module.exports = app
