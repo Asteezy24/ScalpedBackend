@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 
 const alertSchema = new mongoose.Schema({
+  date: { type: String, trim: true, required: true },
   typeOfAlert: { type: String, trim: true, required: true },
   action: { type: String, trim: true, required: true },
   underlying: { type: String, trim: true, required: true },

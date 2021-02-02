@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 
 const strategySchema = new mongoose.Schema({
+  // profile level information
+  username: { type: String, trim: true, required: false },
   // Moving Average
   action: { type: String, trim: true, required: false },
   timeframe: { type: String, trim: true, required: false },

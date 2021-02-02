@@ -27,30 +27,13 @@ exports.getAlerts = [
         // return 400 because of parameter validation
         return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       } else {
-        User.findOne({ username: req.body.username }).then((user) => {
-        // our function to build our array of alerts
-          const buildAlertsArray = async (user) => {
-            let alerts = []
-            for (let i = 0; i < user.strategies.length; i++) {
-              await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
-                for (let j = 0; j < foundStrat.alerts.length; j++) {
-                  let foundAlert = {
-                    typeOfAlert: foundStrat.alerts[j].typeOfAlert,
-                    action: foundStrat.alerts[j].action,
-                    underlying: foundStrat.alerts[j].underlying
-                  }
-                  alerts.push(foundAlert)
-                }
-              })
-            }
-            return alerts
-          }
-          if (user.strategies.length > 0) {
-            buildAlertsArray(user).then(alertsArr => {
-              return apiResponse.successResponseWithData(res, 'Operation success', alertsArr)
-            })
-          } else {
+        Strategy.find({ username: req.body.username }).then(async (strategies) => {
+          let alertsArr = []
+          await strategies.forEach(item => item.alerts.forEach(innerItem => alertsArr.push(innerItem)))
+          if (alertsArr.length < 1) {
             return apiResponse.successResponseWithData(res, 'Operation success', [])
+          } else {
+            return apiResponse.successResponseWithData(res, 'Operation success', alertsArr)
           }
         })
       }
@@ -63,6 +46,7 @@ exports.getAlerts = [
 
 exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
   let alert = new Alert({
+    date: new Date(),
     typeOfAlert: strategyIdentifier,
     action: action,
     underlying: underlying,
@@ -75,6 +59,7 @@ exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
     if (foundStrat !== null) {
       foundStrat.alerts.push(alert)
       // notify.blastToAllChannels('alex', exchange, action, underlying, '', timeframe)
+      alert.save()
       await foundStrat.save((err) => {
         if (err) {
           log('error saving alert ' + err)
@@ -87,11 +72,14 @@ exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
 
 exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, timeframe, exchange) => {
   let alert = new Alert({
+    date: new Date(),
     typeOfAlert: strategyIdentifier,
     action: action,
     underlying: underlying,
     actedUpon: false
   })
+
+  alert.save()
 
   log('Trying to save guppy alert for ' + underlying)
 
