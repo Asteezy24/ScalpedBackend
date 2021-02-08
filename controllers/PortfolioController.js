@@ -47,7 +47,7 @@ exports.addToPortfolio = [
         if (req.body.typeOfAlert === 'Moving Average') {
           query = { username: req.body.username, action: 'Buy', identifier: req.body.typeOfAlert }
         } else {
-          query = { username: req.body.username, identifier: req.body.typeOfAlert }
+          query = { username: req.body.username, underlyings: req.body.underlying, identifier: req.body.typeOfAlert }
         }
         Strategy.findOne(query).then(async (foundStrat) => {
           if (foundStrat !== null) {
@@ -59,7 +59,7 @@ exports.addToPortfolio = [
               )
             }
             let alertIndex = foundStrat.alerts.findIndex(filterAlert)
-            await Strategy.updateOne({ username: req.body.username, action: 'Buy', identifier: req.body.typeOfAlert }, { ['alerts.' + alertIndex + '.actedUpon']: true })
+            await Strategy.updateOne(query, { ['alerts.' + alertIndex + '.actedUpon']: true })
 
             await Stock.findOne({ name: req.body.underlying }).then(async (stock) => {
               let item = new PortfolioItem({
