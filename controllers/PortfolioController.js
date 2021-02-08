@@ -43,7 +43,13 @@ exports.addToPortfolio = [
           'Validation Error. ' + errors.array()[0].msg
         )
       } else {
-        Strategy.findOne({ username: req.body.username, action: 'Buy', identifier: req.body.typeOfAlert }).then(async (foundStrat) => {
+        let query
+        if (req.body.typeOfAlert === 'Moving Average') {
+          query = { username: req.body.username, action: 'Buy', identifier: req.body.typeOfAlert }
+        } else {
+          query = { username: req.body.username, identifier: req.body.typeOfAlert }
+        }
+        Strategy.findOne(query).then(async (foundStrat) => {
           if (foundStrat !== null) {
             const filterAlert = async alert => {
               return (
