@@ -22,9 +22,15 @@ mongoose.set('useFindAndModify', false)
  */
 
 exports.addToPortfolio = [
-  body('username', 'Username must not be empty.').isLength({ min: 1 }).trim(),
-  body('underlying', 'Underlying must not be empty.').isLength({ min: 1 }).trim(),
-  body('typeOfAlert', 'Type must not be empty.').isLength({ min: 1 }).trim(),
+  body('username', 'Username must not be empty.')
+    .isLength({ min: 1 })
+    .trim(),
+  body('underlying', 'Underlying must not be empty.')
+    .isLength({ min: 1 })
+    .trim(),
+  body('typeOfAlert', 'Type must not be empty.')
+    .isLength({ min: 1 })
+    .trim(),
 
   // check('*').escape(),
   (req, res) => {
@@ -32,68 +38,41 @@ exports.addToPortfolio = [
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
         // return 400
-        return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
+        return apiResponse.validationError(
+          res,
+          'Validation Error. ' + errors.array()[0].msg
+        )
       } else {
-        // find user
-        User.findOne({ username: req.body.username }).then(async (foundUser) => {
-          // return 404 user not found
-          if (foundUser === null) {
-            return apiResponse.notFoundResponse(res, 'User does not exist with this username')
-          } else {
-            // IMPLEMENT
+        Strategy.findOne({ username: req.body.username, action: 'Buy', identifier: req.body.typeOfAlert }).then(async (foundStrat) => {
+          if (foundStrat !== null) {
+            const filterAlert = async alert => {
+              return (
+                alert.typeOfAlert === req.body.typeOfAlert &&
+                alert.underlying === req.body.underlying &&
+                alert.action === 'Buy'
+              )
+            }
+            let alertIndex = foundStrat.alerts.findIndex(filterAlert)
+            await Strategy.updateOne({ username: req.body.username, action: 'Buy', identifier: req.body.typeOfAlert }, { ['alerts.' + alertIndex + '.actedUpon']: true })
+
             await Stock.findOne({ name: req.body.underlying }).then(async (stock) => {
-              if (stock === null) {
-                return apiResponse.notFoundResponse(res, 'Stock does not exist')
-              } else {
-                let item = new PortfolioItem({
-                  underlying: req.body.underlying,
-                  currentPrice: stock.price,
-                  currentPL: '0',
-                  dateBought: new Date(),
-                  purchasePrice: stock.price
-                })
-                // our function to build our array of alerts
-                const buildAlertsArray = async (foundUser) => {
-                  let alerts = []
-                  for (let i = 0; i < foundUser.strategies.length; i++) {
-                    await Strategy.findOne({ _id: foundUser.strategies[i] }).then((foundStrat) => {
-                      for (let j = 0; j < foundStrat.alerts.length; j++) {
-                        let foundAlert = {
-                          typeOfAlert: foundStrat.alerts[j].typeOfAlert,
-                          action: foundStrat.alerts[j].action,
-                          underlying: foundStrat.alerts[j].underlying,
-                          actedUpon: foundStrat.alerts[j].actedUpon
-                        }
-                        alerts.push(foundAlert)
-                      }
-                    })
-                  }
-                  return alerts
-                }
-                if (foundUser.strategies.length > 0) {
-                  buildAlertsArray(foundUser).then(alertsArr => {
-                    if (alertsArr === null || alertsArr.length === 0) {
-                      return apiResponse.notFoundResponse(res, 'User has no alerts')
-                    } else {
-                      const filterAlert = async (alert) => {
-                        return alert.typeOfAlert === req.body.typeOfAlert && alert.underlying === req.body.underlying && alert.action === 'Buy'
-                      }
-                      let alert = alertsArr.find(filterAlert)
-                      alert.actedUpon = true
-                      foundUser.portfolio.push(item)
-                      foundUser.save((err) => {
-                        if (err) {
-                          log('error saving user ' + err)
-                          return apiResponse.ErrorResponse(res, 'Couldnt save mongoose')
-                        }
-                        return apiResponse.successResponse(res, 'Success!')
-                      })
-                    }
-                  })
+              let item = new PortfolioItem({
+                underlying: req.body.underlying,
+                currentPrice: stock.price,
+                currentPL: '0',
+                dateBought: new Date(),
+                purchasePrice: stock.price
+              })
+
+              await User.findOne({ username: req.body.username }).then((foundUser) => {
+                if (foundUser !== null) {
+                  foundUser.portfolio.push(item)
+                  foundUser.save()
+                  return apiResponse.successResponse(res, 'Success!')
                 } else {
-                  return apiResponse.ErrorResponse(res, 'We never had this alert to begin with.')
+                  return apiResponse.notFoundResponse(res, 'User does not exist')
                 }
-              }
+              })
             })
           }
         })
@@ -115,22 +94,34 @@ exports.addToPortfolio = [
  */
 
 exports.getPortfolio = [
-  body('username', 'Username must not be empty.').isLength({ min: 1 }).trim(),
+  body('username', 'Username must not be empty.')
+    .isLength({ min: 1 })
+    .trim(),
   check('*').escape(),
   (req, res) => {
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
         // return 400
-        return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
+        return apiResponse.validationError(
+          res,
+          'Validation Error. ' + errors.array()[0].msg
+        )
       } else {
         // find user
-        User.findOne({ username: req.body.username }).then(async (foundUser) => {
+        User.findOne({ username: req.body.username }).then(async foundUser => {
           // return 404 user not found
           if (foundUser === null) {
-            return apiResponse.notFoundResponse(res, 'User does not exist with this username')
+            return apiResponse.notFoundResponse(
+              res,
+              'User does not exist with this username'
+            )
           } else {
-            return apiResponse.successResponseWithData(res, 'Operation success', foundUser.portfolio)
+            return apiResponse.successResponseWithData(
+              res,
+              'Operation success',
+              foundUser.portfolio
+            )
           }
         })
       }

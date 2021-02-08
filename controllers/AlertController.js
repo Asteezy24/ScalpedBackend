@@ -4,8 +4,8 @@ const { body, validationResult } = require('express-validator')
 const mongoose = require('mongoose')
 const log = require('../helpers/utils').log
 const Alert = require('../mongoose/Alert')
-const Strategy = require('../mongoose/Strategy')
 const User = require('../mongoose/User')
+const Strategy = require('../mongoose/Strategy')
 // const notify = require('../helpers/notify')
 mongoose.set('useFindAndModify', false)
 
@@ -44,7 +44,7 @@ exports.getAlerts = [
   }
 ]
 
-exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
+exports.saveYieldAlert = async (strategyIdentifier, action, underlying, username) => {
   let alert = new Alert({
     date: new Date(),
     typeOfAlert: strategyIdentifier,
@@ -70,7 +70,7 @@ exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
   })
 }
 
-exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, timeframe, exchange) => {
+exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, timeframe) => {
   let alert = new Alert({
     date: new Date(),
     typeOfAlert: strategyIdentifier,
@@ -79,13 +79,12 @@ exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, 
     actedUpon: false
   })
 
-  alert.save()
-
   log('Trying to save guppy alert for ' + underlying)
 
   await Strategy.findOne({ identifier: strategyIdentifier, action: action, timeframe: timeframe, underlyings: underlying }).then(async (foundStrat) => {
     if (foundStrat !== null) {
       foundStrat.alerts.push(alert)
+      // alert.save()
       // notify.blastToAllChannels('alex', exchange, action, underlying, '', timeframe)
       await foundStrat.save((err) => {
         if (err) {
@@ -94,5 +93,17 @@ exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, 
       })
       log('Saved alert!')
     }
+
+    // User.findOne({ username: foundStrat.username }).then(async (foundUser) => {
+    //   if (foundUser !== null) {
+    //     // const filterStrategy = async (strategy) => {
+    //     //   return strategy.typeOfAlert === req.body.typeOfAlert && alert.underlying === req.body.underlying && alert.action === 'Buy'
+    //     // }
+    //     // find the strategy we are saving to
+    //
+    //   }
+    // })
+
+
   })
 }

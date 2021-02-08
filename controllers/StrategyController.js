@@ -101,11 +101,11 @@ exports.strategyCreate = [
         const returnStrategyAfterBuild = async (user) => {
           await buildStrategy().then((strategy) => {
             strategy.save()
-            user.strategies.push(strategy)
+            // user.strategies.push(strategy)
+            // strategy.save()
             user.save((err) => {
               if (!err) {
                 log('New Strategy Created for Username: ' + username)
-                strategy.save()
                 // return 200 success
                 return apiResponse.successResponse(res, 'Strategy Add Success.')
               } else {

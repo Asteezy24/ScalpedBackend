@@ -151,7 +151,7 @@ async function seeIfGuppyTriggered (symbol, instance, timeframe) {
   // if we have a new guppy signal
   if (oldDataJson['guppy'] !== newDataJson['guppy'] && signal !== 'neutral') {
     // alert saving to DB
-    AlertController.saveMovingAverageAlert('Moving Average', signal, symbol, timeframe)
+    await AlertController.saveMovingAverageAlert('Moving Average', signal, symbol, timeframe)
 
     // notifications
     notify.blastToAllChannels('alex', instance.id, signal, symbol, lastPrice, timeframe)
@@ -177,7 +177,7 @@ async function seeIfYieldTriggered () {
 
               if (stock.price < yieldBuyPrice) {
                 // alert saving to DB
-                AlertController.saveYieldAlert('Yield', 'Buy', stock.name)
+                AlertController.saveYieldAlert('Yield', 'Buy', stock.name, strategies[i].username)
                 // notifications
                 // notify.blastToAllChannels('alex', instance.id, signal, symbol, '', timeframe)
               }

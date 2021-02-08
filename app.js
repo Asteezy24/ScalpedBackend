@@ -8,7 +8,7 @@ const logger = require('morgan')
 const log = require('./helpers/utils').log
 const bodyParser = require('body-parser')
 const Strategy = require('./mongoose/Strategy')
-const Alert = require('./mongoose/Alert')
+const AlertController = require('./controllers/AlertController')
 const TickerCollection = require('./data collection/TickerCollection')
 
 // DB connection
@@ -52,19 +52,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // start the data collection process
 TickerCollection.collectData()
-//
-// for (let i = 0; i < 99; i++) {
-//   Strategy.findOne({ action: 'Sell', timeframe: '1H' }).then((strat) => {
-//     let alert = new Alert({
-//       typeOfAlert: 'Moving Average',
-//       action: 'Buy',
-//       underlying: strat.underlyings[0],
-//       actedUpon: false
-//     })
-//     strat.alerts.push(alert)
-//     strat.save()
-//   })
-//   console.log('saved')
-// }
+
+AlertController.saveMovingAverageAlert('Moving Average', 'Buy', 'RDD/BTC', '1H')
 
 module.exports = app
