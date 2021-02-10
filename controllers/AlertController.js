@@ -4,9 +4,7 @@ const { body, validationResult } = require('express-validator')
 const mongoose = require('mongoose')
 const log = require('../helpers/utils').log
 const Alert = require('../mongoose/Alert')
-const User = require('../mongoose/User')
 const Strategy = require('../mongoose/Strategy')
-// const notify = require('../helpers/notify')
 mongoose.set('useFindAndModify', false)
 
 /**
@@ -59,7 +57,6 @@ exports.saveYieldAlert = async (strategyIdentifier, action, underlying, username
     if (foundStrat !== null) {
       foundStrat.alerts.push(alert)
       // notify.blastToAllChannels('alex', exchange, action, underlying, '', timeframe)
-      alert.save()
       await foundStrat.save((err) => {
         if (err) {
           log('error saving alert ' + err)
@@ -84,7 +81,6 @@ exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, 
   await Strategy.findOne({ identifier: strategyIdentifier, action: action, timeframe: timeframe, underlyings: underlying }).then(async (foundStrat) => {
     if (foundStrat !== null) {
       foundStrat.alerts.push(alert)
-      // alert.save()
       // notify.blastToAllChannels('alex', exchange, action, underlying, '', timeframe)
       await foundStrat.save((err) => {
         if (err) {
@@ -93,17 +89,5 @@ exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, 
       })
       log('Saved alert!')
     }
-
-    // User.findOne({ username: foundStrat.username }).then(async (foundUser) => {
-    //   if (foundUser !== null) {
-    //     // const filterStrategy = async (strategy) => {
-    //     //   return strategy.typeOfAlert === req.body.typeOfAlert && alert.underlying === req.body.underlying && alert.action === 'Buy'
-    //     // }
-    //     // find the strategy we are saving to
-    //
-    //   }
-    // })
-
-
   })
 }

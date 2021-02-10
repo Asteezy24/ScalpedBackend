@@ -6,8 +6,8 @@ const userSchema = new mongoose.Schema({
   deviceToken: { type: String, trim: true, required: true },
   password: { type: String, unique: false, trim: true },
   watchlist: [{}],
-  portfolio: [{}],
-  strategies: [{}]
+  portfolio: [{}]
+  // strategies: [{}]
 })
 
 userSchema.pre('save', function (next) {

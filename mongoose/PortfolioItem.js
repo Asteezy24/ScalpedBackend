@@ -5,7 +5,8 @@ const portfolioItem = new mongoose.Schema({
   currentPrice: { type: String, trim: true, required: false },
   currentPL: { type: String, trim: true, required: false },
   dateBought: { type: String, trim: true, required: false },
-  purchasePrice: { type: String, trim: true, required: false }
+  purchasePrice: { type: String, trim: true, required: false },
+  type: { type: String, trim: true, required: false }
 }, { versionKey: false }, { _id: false })
 
 module.exports = mongoose.model('Portfolio Item', portfolioItem)

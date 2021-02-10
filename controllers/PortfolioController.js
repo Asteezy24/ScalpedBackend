@@ -1,11 +1,9 @@
 const User = require('../mongoose/User')
 const Stock = require('../mongoose/Stock')
-const Alert = require('../mongoose/Alert')
 const Strategy = require('../mongoose/Strategy')
 const PortfolioItem = require('../mongoose/PortfolioItem')
 const { body, validationResult } = require('express-validator')
 const { check } = require('express-validator')
-const log = require('../helpers/utils').log
 const apiResponse = require('../helpers/apiResponse')
 // const auth = require('../middlewares/jwt')
 const mongoose = require('mongoose')
@@ -63,6 +61,7 @@ exports.addToPortfolio = [
 
             await Stock.findOne({ name: req.body.underlying }).then(async (stock) => {
               let item = new PortfolioItem({
+                type: req.body.typeOfAlert,
                 underlying: req.body.underlying,
                 currentPrice: stock.price,
                 currentPL: '0',

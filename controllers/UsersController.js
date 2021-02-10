@@ -44,8 +44,7 @@ exports.createNewUser = [
               username: req.body.username,
               deviceToken: '0',
               password: req.body.password,
-              watchlist: [],
-              strategies: []
+              watchlist: []
             })
             user.save((err) => {
               if (err) {
