@@ -7,7 +7,8 @@ const mongoose = require('mongoose')
 const logger = require('morgan')
 const log = require('./helpers/utils').log
 const bodyParser = require('body-parser')
-const User = require('./mongoose/User')
+const Strategy = require('./mongoose/Strategy')
+const AlertController = require('./controllers/AlertController')
 const TickerCollection = require('./data collection/TickerCollection')
 
 // DB connection
@@ -51,5 +52,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // start the data collection process
 TickerCollection.collectData()
+
+// AlertController.saveMovingAverageAlert('Moving Average', 'Buy', 'RDD/BTC', '1H')
+// AlertController.saveYieldAlert('Yield', 'Buy', 'BCH/BTC', 'A')
 
 module.exports = app

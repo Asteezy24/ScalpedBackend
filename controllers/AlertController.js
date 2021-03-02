@@ -5,8 +5,6 @@ const mongoose = require('mongoose')
 const log = require('../helpers/utils').log
 const Alert = require('../mongoose/Alert')
 const Strategy = require('../mongoose/Strategy')
-const User = require('../mongoose/User')
-// const notify = require('../helpers/notify')
 mongoose.set('useFindAndModify', false)
 
 /**
@@ -27,30 +25,13 @@ exports.getAlerts = [
         // return 400 because of parameter validation
         return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       } else {
-        User.findOne({ username: req.body.username }).then((user) => {
-        // our function to build our array of alerts
-          const buildAlertsArray = async (user) => {
-            let alerts = []
-            for (let i = 0; i < user.strategies.length; i++) {
-              await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
-                for (let j = 0; j < foundStrat.alerts.length; j++) {
-                  let foundAlert = {
-                    typeOfAlert: foundStrat.alerts[j].typeOfAlert,
-                    action: foundStrat.alerts[j].action,
-                    underlying: foundStrat.alerts[j].underlying
-                  }
-                  alerts.push(foundAlert)
-                }
-              })
-            }
-            return alerts
-          }
-          if (user.strategies.length > 0) {
-            buildAlertsArray(user).then(alertsArr => {
-              return apiResponse.successResponseWithData(res, 'Operation success', alertsArr)
-            })
-          } else {
+        Strategy.find({ username: req.body.username }).then(async (strategies) => {
+          let alertsArr = []
+          await strategies.forEach(item => item.alerts.forEach(innerItem => alertsArr.push(innerItem)))
+          if (alertsArr.length < 1) {
             return apiResponse.successResponseWithData(res, 'Operation success', [])
+          } else {
+            return apiResponse.successResponseWithData(res, 'Operation success', alertsArr)
           }
         })
       }
@@ -61,11 +42,13 @@ exports.getAlerts = [
   }
 ]
 
-exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
+exports.saveYieldAlert = async (strategyIdentifier, action, underlying, username) => {
   let alert = new Alert({
+    date: new Date(),
     typeOfAlert: strategyIdentifier,
     action: action,
-    underlying: underlying
+    underlying: underlying,
+    actedUpon: false
   })
 
   log('Trying to save yield alert for ' + underlying)
@@ -82,14 +65,15 @@ exports.saveYieldAlert = async (strategyIdentifier, action, underlying) => {
       log('Saved alert!')
     }
   })
-
 }
 
-exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, timeframe, exchange) => {
+exports.saveMovingAverageAlert = async (strategyIdentifier, action, underlying, timeframe) => {
   let alert = new Alert({
+    date: new Date(),
     typeOfAlert: strategyIdentifier,
     action: action,
-    underlying: underlying
+    underlying: underlying,
+    actedUpon: false
   })
 
   log('Trying to save guppy alert for ' + underlying)

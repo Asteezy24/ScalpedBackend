@@ -20,42 +20,16 @@ exports.strategyGet = [
   body('username', 'Username must not be empty.').isLength({ min: 1 }).trim(),
   (req, res) => {
     try {
-      const buildStrategiesArray = async (user) => {
-        let strategies = []
-        for (let i = 0; i < user.strategies.length; i++) {
-          await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
-            let strategyToPush = {
-              timeframe: foundStrat.timeframe === undefined ? '' : foundStrat.timeframe,
-              underlyings: foundStrat.identifier === 'Yield' ? foundStrat.underlyings : [foundStrat.underlyings[0]],
-              identifier: foundStrat.identifier,
-              action: foundStrat.action === undefined ? '' : foundStrat.action,
-              yieldBuyPercent: foundStrat.yieldBuyPercent === undefined ? '' : foundStrat.yieldBuyPercent,
-              yieldSellPercent: foundStrat.yieldSellPercent === undefined ? '' : foundStrat.yieldSellPercent,
-              priceWhenAdded: foundStrat.priceWhenAdded === undefined ? '' : foundStrat.priceWhenAdded
-            }
-            strategies.push(strategyToPush)
-          })
-        }
-        return strategies
-      }
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
         // return 400
         return apiResponse.validationError(res, 'Validation Error. ' + errors.array()[0].msg)
       } else {
-        User.findOne({ username: req.body.username }).then((user) => {
-          if (user === null) {
-            return apiResponse.ErrorResponse(res, 'Cannot find user.')
+        Strategy.find({ username: req.body.username }, '-_id -alerts').then(async (stratArray) => {
+          if (stratArray.length > 0) {
+            return apiResponse.successResponseWithData(res, 'Operation success', stratArray)
           } else {
-            if (user.strategies.length > 0) {
-              buildStrategiesArray(user).then(strategiesArr => {
-                // return 200 with list of strategies
-                return apiResponse.successResponseWithData(res, 'Operation success', strategiesArr)
-              })
-            } else {
-              // return 200 with empty list
-              return apiResponse.successResponseWithData(res, 'Operation success', [])
-            }
+            return apiResponse.successResponseWithData(res, 'Operation success', [])
           }
         })
       }
@@ -104,6 +78,7 @@ exports.strategyCreate = [
             }
 
             return new Strategy({
+              username: req.body.username,
               underlyings: req.body.yieldUnderlyings,
               identifier: req.body.identifier,
               yieldBuyPercent: req.body.yieldBuyPercent,
@@ -114,6 +89,7 @@ exports.strategyCreate = [
             })
           } else {
             return new Strategy({
+              username: req.body.username,
               underlyings: [req.body.underlying],
               identifier: req.body.identifier,
               action: req.body.action,
@@ -124,11 +100,12 @@ exports.strategyCreate = [
         }
         const returnStrategyAfterBuild = async (user) => {
           await buildStrategy().then((strategy) => {
-            user.strategies.push(strategy._id)
+            strategy.save()
+            // user.strategies.push(strategy)
+            // strategy.save()
             user.save((err) => {
               if (!err) {
                 log('New Strategy Created for Username: ' + username)
-                strategy.save()
                 // return 200 success
                 return apiResponse.successResponse(res, 'Strategy Add Success.')
               } else {
