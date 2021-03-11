@@ -26,7 +26,6 @@ const bittrexPairs = [
   'ADA/BTC',
   'XLM/BTC',
   'BSV/BTC',
-  'TUSD/BTC',
   'LTC/BTC',
   'LBC/BTC',
   'XEM/BTC',
@@ -42,7 +41,6 @@ const bittrexPairs = [
   'XHV/BTC',
   'GNT/BTC',
   'NMR/BTC',
-  'DASH/BTC',
   'HBAR/BTC',
   'RDD/BTC'
 ]

@@ -82,20 +82,16 @@ exports.addToWatchlist = [
           }).then(async (stock) => {
             // for the user's strategies, if they have a yield strategy, and its a
             // full watchlist strategy, we should update the strategy accordingly.
-            for (let i = 0; i < user.strategies.length; i++) {
-              await Strategy.findOne({ _id: user.strategies[i] }).then((foundStrat) => {
-                if (foundStrat.identifier === 'Yield' && foundStrat.isFullWatchlist) {
-                  foundStrat.underlyings.push(stock.name)
-                  foundStrat.save((err) => {
-                    if (err) {
-                      log('error saving to watchlist ' + err)
-                      //return apiResponse.ErrorResponse(res, 'Couldnt save mongoose')
-                    }
-                    //return apiResponse.successResponse(res, 'Success!')
-                  })
-                }
-              })
-            }
+            await Strategy.find({ username: req.body.username }).then((foundStrat) => {
+              if (foundStrat.identifier === 'Yield' && foundStrat.isFullWatchlist) {
+                foundStrat.underlyings.push(stock.name)
+                foundStrat.save((err) => {
+                  if (err) {
+                    log('error saving to watchlist ' + err)
+                  }
+                })
+              }
+            })
             user.save((err) => {
               if (err) {
                 log('error saving alert ' + err)
