@@ -18,7 +18,7 @@ const technicalModels = []
 
 // -----------------------------------------------------------------------------
 // hourly job
-schedule.scheduleJob('27 * * * *', async function () {
+schedule.scheduleJob('34 * * * *', async function () {
   Stock.find({}).then(async (stocks) => {
     for (const index in stocks) {
       let symbol = stocks[index].name

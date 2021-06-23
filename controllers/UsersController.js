@@ -37,8 +37,8 @@ exports.createNewUser = [
         // validation error 400
         return apiResponse.validationError(res, errors.array()[0].msg)
       } else {
-        AccessCode.deleteOne({ name: req.body.accessCode }).then((code) => {
-          if (code.length < 1) {
+        AccessCode.findOneAndDelete({ name: req.body.accessCode }).then((code) => {
+          if (code === null) {
             return apiResponse.ErrorResponse(res, 'Invalid Access Code!')
           } else {
             const user = new User({
