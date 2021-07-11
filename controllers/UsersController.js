@@ -23,7 +23,7 @@ exports.createNewUser = [
     .custom(async username => {
       await User.findOne({ username: username }).then((user) => {
         if (user !== null) {
-          throw new Error('A user already exists with that email')
+          throw new Error('A user already exists with that username')
         }
       })
     }),
