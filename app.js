@@ -54,6 +54,6 @@ app.use(express.static(path.join(__dirname, 'public')))
 TickerCollection.collectData()
 
 // AlertController.saveMovingAverageAlert('Moving Average', 'Buy', 'RDD/BTC', '1H')
-// AlertController.saveYieldAlert('Yield', 'Buy', 'BCH/BTC', 'A')
+// AlertController.saveYieldAlert('Yield', 'Buy', 'ADA/BTC', 'testUser')
 
 module.exports = app
